@@ -7,8 +7,8 @@ STEP 3D 모델 분석 · 파트 구조 추출 · 제조 공정 난이도 분석 
 외부 STEP 분석 엔진을 Docker 기반으로 샌드박싱하여 실행하고,
 RabbitMQ 기반의 분산 처리 아키텍처를 통해 대규모 파일 업로드에도 안정적인 처리 성능을 보장합니다.
 
-🚀 Highlights
-✔ Industrial-Grade STEP File Analysis Pipeline
+🚀 Highlights 
+## ✔ Industrial-Grade STEP File Analysis Pipeline
 
 외부 라이선스 기반 STEP 분석 엔진을 Docker 이미지 단위로 실행
 
@@ -16,7 +16,7 @@ RabbitMQ 기반의 분산 처리 아키텍처를 통해 대규모 파일 업로�
 
 파트별 ID 관리 및 제조 요소 자동 계산
 
-✔ Asynchronous Distributed Processing
+## ✔ Asynchronous Distributed Processing
 
 RabbitMQ 기반 비동기 작업 큐로 안정적 병렬 처리
 
@@ -24,7 +24,7 @@ RabbitMQ 기반 비동기 작업 큐로 안정적 병렬 처리
 
 메시지 Failure → 재처리 지원
 
-✔ Cloud-Native Architecture
+## ✔ Cloud-Native Architecture
 
 AWS ECS Fargate 기반 완전 관리형 컨테이너 실행 환경
 
@@ -32,7 +32,7 @@ ECR로 Docker 이미지 중앙 관리
 
 Auto Scaling 기반 수평 확장
 
-✔ Manufacturing Cost Estimation Engine
+## ✔ Manufacturing Cost Estimation Engine
 
 파트의 기하 정보 & 분석 데이터 기반 비용 산정
 
@@ -40,55 +40,8 @@ Auto Scaling 기반 수평 확장
 
 파트 단위 상세 견적 계산
 
-🏗️ Architecture Overview
-          ┌──────────────────────┐
-          │      User Upload     │
-          └──────────┬───────────┘
-                     │
-          ┌──────────▼──────────┐
-          │   Spring Boot API    │
-          └──────────┬──────────┘
-                     │  Publish Task
-          ┌──────────▼──────────┐
-          │      RabbitMQ        │
-          └──────────┬──────────┘
-                     │  Consume Task
-      ┌──────────────▼──────────────┐
-      │   Analyzer Worker (Docker)   │
-      │  ▶ STEP → JSON Feature Data  │
-      └──────────────┬──────────────┘
-                     │
-          ┌──────────▼──────────┐
-          │  Post Processor      │
-          │ Feature Mapping, Cost│
-          └──────────┬──────────┘
-                     │
-          ┌──────────▼──────────┐
-          │    PostgreSQL DB    │
-          └──────────────────────┘
 
-📂 Directory Structure (Example)
-/api
-  ├── controller
-  ├── service
-  ├── domain
-  ├── repository
-  ├── config
-/worker
-  ├── docker
-  ├── parser
-  ├── scheduler
-  ├── utils
-/analysis
-  ├── json-mapper
-  ├── geometry
-infra/
-  ├── aws
-  ├── ecs
-  ├── ecr
-  ├── rabbitmq
-
-⚙️ Technology Stack
+## ⚙️ Technology Stack
 Area	Tech
 Backend	Java 17, Spring Boot, JPA
 Database	PostgreSQL
@@ -96,7 +49,8 @@ Async / Queue	RabbitMQ
 Infrastructure	Docker, AWS ECS Fargate, Amazon ECR
 DevOps	GitHub Actions, Cloud Logging/Monitoring
 STEP Analysis	External Analyzer (Docker Sandbox)
-📡 API Examples
+
+## 📡 API Examples
 ▶ Upload STEP File
 POST /api/v1/files
 Content-Type: multipart/form-data
@@ -107,26 +61,26 @@ GET /api/v1/files/{fileId}/analysis
 ▶ Get Cost Estimation
 GET /api/v1/files/{fileId}/cost
 
-📈 Performance Achievements
-🔧 분석 파이프라인 최적화
+## 📈 Performance Achievements
+#### 🔧 분석 파이프라인 최적화
 
 STEP 분석 후처리 최적화로 처리 속도 50% 개선
 
 대량 파일 처리 시 서버 부하 60% 감소
 
-⚡ 분산 처리 구조
+#### ⚡ 분산 처리 구조
 
 RabbitMQ 기반 큐 처리로 동시 사용자 증가에도 안정성 확보
 
 ECS Fargate 활용 → 트래픽 증가 시 자동 확장
 
-🛠 운영 안정성
+#### 🛠 운영 안정성
 
 Docker 기반 분석 엔진 격리로 장애 영향 최소화
 
 JSON 분석 파이프라인에서 오류 감지 & 자동 재처리 기능 구현
 
-🧑‍💻 Responsibilities (Author)
+##### 🧑‍💻 Responsibilities (Author)
 
 전체 시스템 아키텍처 설계 및 초기 기반 구축
 
@@ -144,7 +98,7 @@ AWS ECS Fargate 기반 배포 및 컨테이너 운영 자동화
 
 대량 파일 처리 최적화 및 에러 복구 로직 구축
 
-📅 Roadmap
+#### 📅 Roadmap
 
  IGES / Parasolid 등 CAD 포맷 확장
 
@@ -153,8 +107,3 @@ AWS ECS Fargate 기반 배포 및 컨테이너 운영 자동화
  ML 기반 자동 피처 분류 모델 적용
 
  분석 이력 대시보드 구축
-
-📄 License
-
-본 프로젝트는 사내/개인 목적의 Private Repository로 사용됩니다.
-무단 사용 및 배포를 금합니다.
