@@ -1,0 +1,41 @@
+package com.cadify.cadifyWAS.result;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public enum ResultCode {
+
+
+    ORDER_CREATE_SUCCESS(200, "ORDER_CREATE_SUCCESS", "주문 조회 성공"),
+    DELETE_ORDER_SUCCESS(200, "DELETE_ORDER_SUCCESS", "주문 삭제 성공"),
+    UPDATE_ORDER_ADDRESS_SUCCESS(200, "UPDATE_ORDER_ADDRESS_SUCCESS", "주문 배송지 변경 성공"),
+    CREATE_ORDER_ADDRESS_SUCCESS(200, "CREATE_ORDER_ADDRESS_SUCCESS", "주문 배송지 등록 성공"),
+    DELETE_ADDRESS_SUCCESS(200, "DELETE_ADDRESS_SUCCESS", "주문 배송지 삭제 성공"),
+    ADD_CART_ITEM_SUCCESS(200, "ADD_CART_ITEM_SUCCESS", "견적 장바구니에 담기 성공"),
+    DELETE_CART_ITEM_SUCCESS(200, "DELETE_CART_ITEM_SUCCESS", "장바구니에서 견적 제거 성공"),
+    ADD_CART_ITEM_DUPLICATED(200, "ADD_CART_ITEM_DUPLICATED", "장바구니 견적 중복됨"),
+    UPDATE_CART_ITEM_AMOUNT_SUCCESS(200, "UPDATE_CART_ITEM_AMOUNT_SUCCESS", "장바구니 수량 변경 성공"),
+    WEBHOOK_RECEIVED_SUCCESS(200, "WEBHOOK_RECEIVED_SUCCESS", "토스 웹훅에서 요청 성공적으로 들어옴"),
+    PAYMENT_CANCEL_USER_SUCCESS(200, "PAYMENT_CANCEL_USER_SUCCESS", "결제 취소 성공(유저)"),
+    PAYMENT_CANCEL_FACTORY_SUCCESS(200, "PAYMENT_CANCEL_FACTORY_SUCCESS", "결제 취소 성공(공장)"),
+    PAYMENT_CANCEL_BY_NETWORK_SUCCESS(200, "PAYMENT_CANCEL_BY_NETWORK_SUCCESS", "망 취소 성공"),
+    AFFILIATION_REGISTER_SUCCESS(200, "AFFILIATION_REGISTER_SUCCESS", "담당자 등록 성공"),
+    DELETE_MANAGER_SUCCESS(200, "DELETE_MANAGER_SUCCESS", "담당자 삭제 성공"),
+    UPDATE_MANAGER_SUCCESS(200, "UPDATE_MANAGER_SUCCESS", "담당자 수정 성공"),
+    CREATE_MANAGER_SUCCESS(200, "CREATE_MANAGER_SUCCESS", "담당자 등록 성공"),
+    UPDATE_ROLE_SUCCESS(200, "UPDATE_ROLE_SUCCESS", "유저 역할 등록 성공"),
+    UPDATE_MY_INFO_SUCCESS(200, "UPDATE_MY_INFO_SUCCESS", "내 정보 변경 성공"),
+
+
+
+    SUCCESS(200, "F200", "성공"),
+    FAILED(500, "F500", "실패"),
+    ;
+
+
+    private final int status;
+    private final String code;
+    private final String message;
+}

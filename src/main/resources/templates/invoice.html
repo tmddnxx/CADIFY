@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <style>
+        /* 한글 폰트 적용 */
+        @font-face {
+            font-family: 'NanumBarunGothic';
+            src: url('NanumBarunGothic.ttf') format('truetype'); /* 폰트 파일 경로 */
+        }
+
+        body {
+            font-family: 'NanumBarunGothic', sans-serif;
+            padding: 20px;
+            margin: 20px;
+            font-size: 12px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 6px;
+            text-align: center;
+            font-size: 11px;
+        }
+
+        th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .align-left {
+            text-align: left;
+            padding-left: 5px;
+        }
+
+        .total-box {
+            font-size: 13px;
+            font-weight: bold;
+            background-color: #f2f2f2;
+            padding: 10px;
+        }
+
+        .narrow {
+            width: 8%;
+        } /* 폭을 좁히기 위한 클래스 */
+
+        .wide {
+            width: 20%;
+        } /* 품명 칸을 넓게 */
+    </style>
+</head>
+<body>
+<h1>거래명세서</h1>
+
+<!-- 거래처 및 발행 정보 -->
+<table>
+    <tr>
+        <th class="narrow">발행일</th>
+        <td th:text="${issueDate}"></td>
+        <th class="narrow">거래처명</th>
+        <td th:text="${customerName}"></td>
+    </tr>
+    <tr>
+        <th class="narrow">인수 담당자</th>
+        <td th:text="${receiverName}"></td>
+        <th colspan="2"></th>
+    </tr>
+</table>
+
+<!-- 공급자 정보 -->
+<p class="section-title">공급자 정보</p>
+<table>
+    <tr>
+        <th class="narrow">사업자번호</th>
+        <td>1111</td>
+        <th class="narrow">업체명</th>
+        <td>cadify</td>
+    </tr>
+    <tr>
+        <th class="narrow">주소</th>
+        <td colspan="3">가산디지털단지</td>
+    </tr>
+    <tr>
+        <th class="narrow">업태</th>
+        <td>서비스업</td>
+        <th class="narrow">종목</th>
+        <td>IT</td>
+    </tr>
+    <tr>
+        <th class="narrow">전화</th>
+        <td>010-1234-5678</td>
+        <th class="narrow">팩스</th>
+        <td></td>
+    </tr>
+</table>
+
+<!-- 품목 정보 -->
+<p class="section-title">거래 품목</p>
+<table>
+    <tr>
+        <th class="narrow">No</th>
+        <th class="wide align-left">품 명</th>
+        <th class="narrow">수량</th>
+        <th class="narrow">단가</th>
+        <th class="narrow">공급가액</th>
+        <th class="narrow">세액</th>
+    </tr>
+    <tr th:each="item, iterStat : ${items}">
+        <td th:text="${iterStat.count}"></td>
+        <td class="wide align-left" th:text="${item.name}"></td>
+        <td th:text="${item.quantity}"></td>
+        <td th:text="${item.unitPrice}"></td>
+        <td th:text="${item.supplyPrice}"></td>
+        <td th:text="${item.tax}"></td>
+    </tr>
+</table>
+
+<!-- 총 합계 -->
+<p class="section-title">총 합계</p>
+<table>
+    <tr>
+        <th class="total-box">공급가액 합계</th>
+        <td class="total-box" th:text="${totalAmount}"></td>
+    </tr>
+    <tr>
+        <th class="total-box">총 합계 (VAT 포함)</th>
+        <td class="total-box" th:text="${totalWithVat}"></td>
+    </tr>
+</table>
+</body>
+</html>
