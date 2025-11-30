@@ -1,4 +1,4 @@
-📘 CADIFY – Automated STEP File Analysis & Manufacturing Cost Estimation System
+# 📘 CADIFY – Automated STEP File Analysis & Manufacturing Cost Estimation System
 <p align="left"> <img src="https://img.shields.io/badge/Java-17-007396?logo=java&logoColor=white" /> <img src="https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?logo=springboot&logoColor=white" /> <img src="https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white" /> <img src="https://img.shields.io/badge/RabbitMQ-3.x-FF6600?logo=rabbitmq&logoColor=white" /> <img src="https://img.shields.io/badge/AWS-ECS%20Fargate-FF9900?logo=amazonaws&logoColor=white" /> <img src="https://img.shields.io/badge/Docker-Engine-2496ED?logo=docker&logoColor=white" /> </p>
 
 CADIFY는 3D 제조업 자동 견적 시스템을 위해 설계된
@@ -7,7 +7,7 @@ STEP 3D 모델 분석 · 파트 구조 추출 · 제조 공정 난이도 분석 
 외부 STEP 분석 엔진을 Docker 기반으로 샌드박싱하여 실행하고,
 RabbitMQ 기반의 분산 처리 아키텍처를 통해 대규모 파일 업로드에도 안정적인 처리 성능을 보장합니다.
 
-🚀 Highlights 
+## 🚀 Highlights 
 ## ✔ Industrial-Grade STEP File Analysis Pipeline
 
 외부 라이선스 기반 STEP 분석 엔진을 Docker 이미지 단위로 실행
