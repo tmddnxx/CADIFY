@@ -68,4 +68,15 @@ public class AdminOrderDTO {
         private String key;
         private OrderReceivedStatus status;
     }
+
+    // 상태 업데이트 응답
+    @Getter
+    @NoArgsConstructor
+    public static class StatusResponse {
+        private String status;
+
+        public StatusResponse(String status) {
+            this.status = status;
+        }
+    }
 }

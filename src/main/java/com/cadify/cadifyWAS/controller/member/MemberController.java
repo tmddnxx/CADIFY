@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -36,7 +34,7 @@ public class MemberController {
 
     // 첫 OAuth2 로그인 이후 (사용자 유형 선택: MemberRole)
     @PatchMapping("/assign/role")
-    public ResponseEntity<MemberDTO.MemberInfo> assignMemberRoleForFirstLogin(@RequestBody Map<String, String> request){
+    public ResponseEntity<MemberDTO.MemberInfo> assignMemberRoleForFirstLogin(@Valid @RequestBody MemberDTO.AssignRoleRequest request){
         AuthDTO.AssignRoleResult result = oAuthMemberService.assignMemberRole(request);
 
         MemberDTO.MemberInfo response = result.getMemberInfo();

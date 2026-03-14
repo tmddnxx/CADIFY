@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -51,7 +50,7 @@ public class CompanyController {
 
     // 관리자 삭제
     @DeleteMapping("/manager")
-    public ResponseEntity<List<CompanyManagerResponse>>deleteManager(@RequestBody Map<String, String> request){
+    public ResponseEntity<List<CompanyManagerResponse>>deleteManager(@Valid @RequestBody CompanyDTO.DeleteManagerRequest request){
         List<CompanyManagerResponse> response = companyService.deleteManager(request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -65,7 +64,7 @@ public class CompanyController {
 
     // 회사 정보 수정
     @PatchMapping
-    public ResponseEntity<CompanyResponse>updateCompanyInfo(@RequestBody Map<String, String> request){
+    public ResponseEntity<CompanyResponse>updateCompanyInfo(@Valid @RequestBody CompanyDTO.UpdateCompanyInfoRequest request){
         CompanyResponse response = companyService.updateCompanyInfo(request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

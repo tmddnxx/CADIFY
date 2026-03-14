@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -78,17 +77,17 @@ public class AdminOrderController {
 
     // order item status update
     @PatchMapping("/item/status")
-    public ResponseEntity<Map<String, String>> updateOrderItemStatus(@RequestBody AdminOrderDTO.StatusUpdateRequests request){
+    public ResponseEntity<AdminOrderDTO.StatusResponse> updateOrderItemStatus(@RequestBody AdminOrderDTO.StatusUpdateRequests request){
         String response = adminOrderService.decideProcessable(request);
 
-        return new ResponseEntity<>(Map.of("status", response), HttpStatus.OK);
+        return new ResponseEntity<>(new AdminOrderDTO.StatusResponse(response), HttpStatus.OK);
     }
 
-    // order status update
+    // 주문 상태 업데이트
     @PatchMapping("/status")
-    public ResponseEntity<Map<String, String>> updateOrderStatus(@RequestBody AdminOrderDTO.StatusUpdateRequests request){
+    public ResponseEntity<AdminOrderDTO.StatusResponse> updateOrderStatus(@RequestBody AdminOrderDTO.StatusUpdateRequests request){
         String response = adminOrderService.processDeliveryAndSettlement(request);
 
-        return new ResponseEntity<>(Map.of("status", response), HttpStatus.OK);
+        return new ResponseEntity<>(new AdminOrderDTO.StatusResponse(response), HttpStatus.OK);
     }
 }

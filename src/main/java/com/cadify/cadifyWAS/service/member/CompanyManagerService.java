@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -83,8 +82,8 @@ public class CompanyManagerService {
 
     // 관리자 삭제 ( 수정 중 )
     @Transactional
-    public List<CompanyManagerResponse> deleteManager(Map<String, String> request){
-        String managerKey = request.get("managerKey");
+    public List<CompanyManagerResponse> deleteManager(CompanyDTO.DeleteManagerRequest request){
+        String managerKey = request.getManagerKey();
         JwtPrincipal principal = isValidCompanyManager();
         CompanyManager manager = companyManagerRepository.findByManagerKey(managerKey)
                 .orElseThrow(() -> new CustomLogicException(ExceptionCode.MANAGER_NOT_FOUND));
@@ -111,8 +110,8 @@ public class CompanyManagerService {
 
     // 회사 정보 수정
     @Transactional
-    public CompanyResponse updateCompanyInfo(Map<String, String> request){
-        String companyName = request.get("companyName");
+    public CompanyResponse updateCompanyInfo(CompanyDTO.UpdateCompanyInfoRequest request){
+        String companyName = request.getCompanyName();
         OAuthMember company = jwtUtil.getLoginMember();
         if(!company.getRole().equals(MemberRole.COMPANY)){
             throw new CustomLogicException(ExceptionCode.NOT_COMPANY_MEMBER);

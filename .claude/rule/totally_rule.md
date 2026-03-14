@@ -77,6 +77,10 @@
 - Request: `@Getter @Setter @NoArgsConstructor`
 - Response: `@Getter @Builder @AllArgsConstructor` (Setter 없음)
 - 날짜 포맷: `@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")`
+- **`Map` 타입을 Controller/Service 파라미터나 반환값으로 사용 금지** — 반드시 전용 DTO 클래스 정의
+  - `@RequestBody Map<String, String>` 금지 → 전용 Request DTO 사용
+  - `ResponseEntity<Map<...>>` 금지 → 전용 Response DTO 사용
+  - 내부 유틸(ThreadLocal, 프로세스 환경 등)에서의 Map 사용은 허용
 
 ## Entity 규칙
 

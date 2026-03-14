@@ -34,4 +34,12 @@ public class MemberDTO {
     public static class UpdateMember{
         private String memberName;
     }
+
+    // 최초 로그인 시 역할 할당 요청
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class AssignRoleRequest {
+        private String role;
+    }
 }

@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Map;
+
 
 @Service
 @RequiredArgsConstructor
@@ -80,8 +80,8 @@ public class OAuthMemberService {
 
     // 최초 로그인 시 role 선택 후 기본 사용자 정보 리턴
     @Transactional
-    public AuthDTO.AssignRoleResult assignMemberRole(Map<String, String> request) {
-        MemberRole role = parseRole(request.get("role"));
+    public AuthDTO.AssignRoleResult assignMemberRole(MemberDTO.AssignRoleRequest request) {
+        MemberRole role = parseRole(request.getRole());
         // 최초 로그인 (회원가입) 이후의 초기 역할 선택에 해당하는지 검증.
         MemberRole currentRole = jwtUtil.getAuthPrincipalObject().getRole();
         if (!currentRole.equals(MemberRole.VISITOR)) {
