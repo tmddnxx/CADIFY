@@ -14,6 +14,8 @@ import com.cadify.cadifyWAS.service.file.enumValues.cnc.limitValue.CNCDrillHoleS
 import com.cadify.cadifyWAS.service.file.enumValues.cnc.limitValue.CNCEndMillSize;
 import com.cadify.cadifyWAS.service.file.enumValues.cnc.priceValue.CNCCostByHole;
 import com.cadify.cadifyWAS.service.file.enumValues.cnc.priceValue.CNCCostBySurface;
+import com.cadify.cadifyWAS.exception.CustomLogicException;
+import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,16 +36,16 @@ public class CNCLimit {
     // metaJson에서 타입 찾기
     public static String extractCnCType(JsonNode parts){
         if (parts == null || !parts.isArray() || parts.size() == 0) {
-            throw new IllegalArgumentException("잘못된 모델링입니다. \n다시 확인해주세요");
+            throw new CustomLogicException(ExceptionCode.INVALID_FILE, "잘못된 모델링입니다. \n다시 확인해주세요");
         }
 
         if (parts.size() > 1) {
-            throw new RuntimeException("현재 단품만 지원하고 있습니다. \n단일 모델링을 업로드 해 주세요");
+            throw new CustomLogicException(ExceptionCode.INVALID_FILE, "현재 단품만 지원하고 있습니다. \n단일 모델링을 업로드 해 주세요");
         }
 
         JsonNode bodies = parts.get(0).get("bodies");
         if (bodies == null || !bodies.isArray() || bodies.size() == 0) {
-            throw new IllegalArgumentException("두께가 없는 surface 형상입니다. \n정상적인 Solid 형상으로 모델링 해주세요");
+            throw new CustomLogicException(ExceptionCode.INVALID_FILE, "두께가 없는 surface 형상입니다. \n정상적인 Solid 형상으로 모델링 해주세요");
         }
 
         JsonNode firstBody = bodies.get(0);
@@ -585,7 +587,7 @@ public class CNCLimit {
 
                 // 샤프트 wall인 경우 바닥면에서 깊이 보정
                 if (hasShaftWall && bottomFaceId != -1) {
-                    System.out.println("특수 케이스: Wall이 샤프트의 일부, 바닥면 ID: " + bottomFaceId);
+                    log.debug("특수 케이스: Wall이 샤프트의 일부, 바닥면 ID: {}", bottomFaceId);
                     JsonNode milledFacesNode = features.path("milledFaces3Axes");
 
                     for (JsonNode milledFaceNode : milledFacesNode) {
@@ -782,7 +784,7 @@ public class CNCLimit {
                 settingTime = settingLatheCalc + settingMillingCalc;
                 break;
             default:
-                throw new IllegalArgumentException("잘못된 CNC 타입입니다. : " + cncType);
+                throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 CNC 타입입니다. : " + cncType);
         }
 
         camTime = camTime < 600 ? 600 : camTime;
@@ -817,7 +819,7 @@ public class CNCLimit {
 
         Double machineRate = CNCMaterialMachiningRate.getMachiningRate(costDTO.getMaterial()); // 가공속도비율
         if (machineRate == null) {
-            throw new RuntimeException("재질정보가 없습니다. 선택하신 재질 : " + costDTO.getMaterial());
+            throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "재질정보가 없습니다. 선택하신 재질 : " + costDTO.getMaterial());
         }
 
         switch (costDTO.getCncType()) {
@@ -831,7 +833,7 @@ public class CNCLimit {
                 processingTime = latheCalc + millingCalc;
                 break;
             default:
-                throw new IllegalArgumentException("잘못된 CNC 가공 타입입니다 : " + costDTO.getCncType());
+                throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 CNC 가공 타입입니다 : " + costDTO.getCncType());
         }
 
         return processingTime * machineRate; // 가공속도비율 곱하기
@@ -851,7 +853,8 @@ public class CNCLimit {
         try{
             holeNodes = objectMapper.readTree(holeJson);
         }catch (JsonProcessingException e){
-            e.printStackTrace();
+            log.error("홀 JSON 파싱 오류: {}", e.getMessage(), e);
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_ERROR_JSON, "홀 정보가 올바르지 않습니다.");
         }
 
         int tapCost = CNCCostByHole.getCostByHole("TAP"); // 개당 단가
@@ -896,7 +899,7 @@ public class CNCLimit {
         double totalVolume = summary.path("totalVolume").asDouble();
         Double kg = CNCMaterialDensity.calculateWeight(costDTO.getMaterial(), totalVolume);
         if (kg == null) {
-            throw new RuntimeException("재질정보가 없습니다. 선택하신 재질 : " + costDTO.getMaterial());
+            throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "재질정보가 없습니다. 선택하신 재질 : " + costDTO.getMaterial());
         }
         Double surfaceCost = CNCCostBySurface.getCostBySurface(costDTO.getSurface(), kg);
 
@@ -922,7 +925,7 @@ public class CNCLimit {
                 commonDiffCost = calcCost * 0.15;
                 break;
             default:
-                throw new IllegalArgumentException("잘못된 공차 옵션입니다. \n공차옵션 : " + costDTO.getCommonDiff());
+                throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 공차 옵션입니다. \n공차옵션 : " + costDTO.getCommonDiff());
         }
         return commonDiffCost;
     }
@@ -941,7 +944,7 @@ public class CNCLimit {
                 roughnessCost = calcCost * 0.05;
                 break;
             default:
-                throw new IllegalArgumentException("잘못된 표면거칠기 옵션입니다. \n표면거칠기 옵션 : " + costDTO.getRoughness());
+                throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 표면거칠기 옵션입니다. \n표면거칠기 옵션 : " + costDTO.getRoughness());
         }
         return roughnessCost;
     }
@@ -969,7 +972,7 @@ public class CNCLimit {
         double totalVolume = summary.path("totalVolume").asDouble(); // 전체 부피
         Double kg = CNCMaterialDensity.calculateWeight(material, totalVolume);
         if (kg == null) {
-            throw new RuntimeException("재질정보가 없습니다. 선택하신 재질 : " + material);
+            throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "재질정보가 없습니다. 선택하신 재질 : " + material);
         }
         log.info("totalVolume 무게 : {}", kg);
         return kg;
@@ -1057,7 +1060,7 @@ public class CNCLimit {
             case "SUS303", "SUS304", "SUS316" -> "STAIN";
             case "AL6061", "AL7075", "AL5052", "BRASS_C3604" -> "NON_STEEL";
             case "POM_WHITE", "POM_BLACK", "MC_NYLON_BLUE", "MC_NYLON_IVORY", "PEEK" -> "RESIN";
-            default -> throw new RuntimeException("잘못된 재질입니다. : " + material);
+            default -> throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 재질입니다. : " + material);
         };
 
         JsonNode holes = features.path("holes");
@@ -1236,7 +1239,7 @@ public class CNCLimit {
         try {
             holeList = mapper.readTree(holeJson);
         } catch (JsonProcessingException e) {
-            throw new IllegalArgumentException("잘못된 JSON 형식입니다.");
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_ERROR_JSON, "잘못된 JSON 형식입니다.");
         }
         if (holeList == null) return false;
 
@@ -1246,7 +1249,7 @@ public class CNCLimit {
 
             double diameter = hole.path("diameter").asDouble();
             boolean isValid = CNCHoleSize.isValidHoleSize(type, diameter);
-            if (!isValid) throw new RuntimeException("허용 하지 않는 탭 사이즈입니다.");
+            if (!isValid) throw new CustomLogicException(ExceptionCode.INVALID_FILE, "허용 하지 않는 탭 사이즈입니다.");
         }
 
         return true;

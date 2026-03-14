@@ -5,7 +5,6 @@ import com.cadify.cadifyWAS.result.ResultCode;
 import com.cadify.cadifyWAS.result.ResultResponse;
 import com.cadify.cadifyWAS.service.admin.AdminService;
 import com.cadify.cadifyWAS.service.factory.FactoryAdminService;
-import com.cadify.cadifyWAS.util.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class FactoryAdminController {
     private final FactoryAdminService factoryAdminService;
     private final AdminService adminService;
-    private final JwtUtil jwtUtil;
 
     @PostMapping("/join")
     public ResponseEntity<ResultResponse> registerFactoryAdmin(@Valid @RequestBody FactoryAdminDTO.JoinRequest request) {

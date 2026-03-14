@@ -406,44 +406,4 @@ public class PaymentService {
                 .block();
     }
 
-    /**
-     * 현금 영수증 요청
-     */
-//    private HttpResponse<String> requestCashReceipt(PaymentDTO.Confirm confirmPaymentRequest) throws IOException, InterruptedException {
-//
-//        Orders orders = orderRepository.findById(confirmPaymentRequest.getOrderId())
-//                .orElseThrow(() -> new CustomLogicException(ExceptionCode.ORDER_NOT_FOUND));
-//
-//        List<OrderItem> orderItems = orderItemRepository.findAllByOrderKey(orders.getOrderKey());
-//
-//        String goodsName = orderItems.get(0).getFileName();
-//
-//
-//        String orderId = confirmPaymentRequest.getOrderId();
-//        String amount = confirmPaymentRequest.getAmount();
-//
-//
-//        ObjectNode requestObj = objectMapper.createObjectNode()
-//                .put("orderId", orderId)
-//                .put("amount", amount)
-//                .put("goodsName", goodsName) //
-//                .put("receiptType", type)
-//                .put("receiptNo", customerIdentityNumber)
-//                .put("supplyAmt") // 공급 가액
-//                .put("goodsVat") // 부가 가치 세
-//                .put("taxFreeAmt", 0) // 면세료
-//                .put("serviceAmt", 0); // 봉사료
-//
-//        String requestBody = objectMapper.writeValueAsString(requestObj);
-//
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create("https://api.tosspayments.com/v1/cash-receipt"))
-//                .header("Authorization", getAuthorizations())
-//                .header("Content-Type", "application/json")
-//                .method("POST", HttpRequest.BodyPublishers.ofString(requestBody))
-//                .build();
-//
-//        return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-//    }
-
 }
