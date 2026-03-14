@@ -1,5 +1,7 @@
 package com.cadify.cadifyWAS.service.file.common.metal;
 
+import com.cadify.cadifyWAS.exception.CustomLogicException;
+import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.cadify.cadifyWAS.model.dto.files.CostDTO;
 import com.cadify.cadifyWAS.model.dto.files.EstimateDTO;
 import com.cadify.cadifyWAS.model.dto.files.OptionDTO;
@@ -166,9 +168,9 @@ public class MetalLimit {
     }
 
     // metaJson에서 최소 한계치 오류 찾기
-    public static String extractLimitError(JsonNode partsArray, double thickness, List<Estimate.ErrorDetail> errorDetailList) throws Exception {
+    public static String extractLimitError(JsonNode partsArray, double thickness, List<Estimate.ErrorDetail> errorDetailList) {
         if(partsArray != null){
-            if(partsArray.size() > 1) throw new Exception("두 개 이상의 파일이 결합된 어셈블리 파일입니다. \n1개의 단품만 업로드해주세요.");
+            if(partsArray.size() > 1) throw new CustomLogicException(ExceptionCode.INVALID_FILE, "두 개 이상의 파일이 결합된 어셈블리 파일입니다. \n1개의 단품만 업로드해주세요.");
 
             for(JsonNode part : partsArray){
                 JsonNode bodyArray = part.get("bodies");
@@ -568,7 +570,7 @@ public class MetalLimit {
                                     .data(map)
                                     .build()
                     );
-                    throw new RuntimeException("허용하지 않는 탭 사이즈입니다.");
+                    throw new CustomLogicException(ExceptionCode.INVALID_FILE, "허용하지 않는 탭 사이즈입니다.");
                 }
             }
             else if(type.contains("CS")){ // 카운터 싱크일때
@@ -588,7 +590,7 @@ public class MetalLimit {
                                     .data(map)
                                     .build()
                     );
-                    throw new RuntimeException("허용하지 않는 접시홀 사이즈입니다.");
+                    throw new CustomLogicException(ExceptionCode.INVALID_FILE, "허용하지 않는 접시홀 사이즈입니다.");
                 }
             }
         }
@@ -707,7 +709,7 @@ public class MetalLimit {
     }
 
     // 일반절곡/R절곡 타입 재질별 가공 가능 사이즈 찾기
-    private static void handleBendSizeByMaterial(JsonNode body, String material, double thickness, List<Estimate.ErrorDetail> errorDetailList, boolean type) throws RuntimeException {
+    private static void handleBendSizeByMaterial(JsonNode body, String material, double thickness, List<Estimate.ErrorDetail> errorDetailList, boolean type) {
 
         int obbLength = body.path("flatObbLength").asInt();
         int obbWidth = body.path("flatObbWidth").asInt();
@@ -716,7 +718,7 @@ public class MetalLimit {
 
             /* 일반절곡이 가능한 두께 검사*/
             Double maxThickness = MetalBendByThickness.getThickness(material); // 절곡 가능 두께
-            if(maxThickness == null) throw new RuntimeException("잘못된 재질입니다.");
+            if(maxThickness == null) throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 재질입니다.");
             if(thickness > maxThickness){
                 errorDetailList.add(
                         Estimate.ErrorDetail.builder()
@@ -729,7 +731,7 @@ public class MetalLimit {
 
             /* 일반절곡이 가능한 형상 크기 검사 */
             Integer[] sizes = MetalBendSizeByMaterial.getSize(material);
-            if(sizes == null) throw new RuntimeException("잘못된 재질입니다.");
+            if(sizes == null) throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 재질입니다.");
 
             int minLength = sizes[0];
             int minWidth = sizes[1];
@@ -763,7 +765,7 @@ public class MetalLimit {
 
             /* R 절곡이 가능한 두께 검사*/
             Double maxThickness = MetalRBendByThickness.getThickness(material); // 절곡 가능 두께
-            if(maxThickness == null) throw new RuntimeException("잘못된 재질입니다.");
+            if(maxThickness == null) throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 재질입니다.");
             if(thickness > maxThickness){
                 errorDetailList.add(
                         Estimate.ErrorDetail.builder()
@@ -777,7 +779,7 @@ public class MetalLimit {
 
             /* R 절곡이 가능한 형상 크기 검사*/
             Integer[] sizes = MetalRBendSizeByMaterial.getSize(material);
-            if(sizes == null) throw new RuntimeException("잘못된 재질입니다.");
+            if(sizes == null) throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 재질입니다.");
 
             int minLength = sizes[0];
             int minWidth = sizes[1];
@@ -809,7 +811,7 @@ public class MetalLimit {
     }
 
     // Flat타입 재질별 가공 가능 사이즈 찾기
-    private static void handleSizeByMaterial(JsonNode body, String material, List<Estimate.ErrorDetail> errorDetailList) throws RuntimeException {
+    private static void handleSizeByMaterial(JsonNode body, String material, List<Estimate.ErrorDetail> errorDetailList) {
 
         String type = body.path("type").asText();
         if(FileCommon.isSameMethod(type, MethodType.SHEET_METAL_FLAT)){ // 절곡없을때
@@ -817,7 +819,7 @@ public class MetalLimit {
             int obbWidth = body.path("flatObbWidth").asInt();
 
             Integer[] sizes = MetalProcessSizeByMaterial.getSize(material); // 재질 별 사이즈 찾기
-            if(sizes == null) throw new RuntimeException("잘못된 재질입니다.");
+            if(sizes == null) throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 재질입니다.");
 
             int minLength = sizes[0];
             int minWidth = sizes[1];
@@ -856,7 +858,7 @@ public class MetalLimit {
         Double minRadius = MetalRBendingJudge.getMinRadiusByMaterial(material);
         Double maxRadius = MetalRBendingJudge.getMaxRadiusByMaterial(material);
 
-        if(minRadius == null || maxRadius == null) throw new RuntimeException("잘못된 재질입니다,");
+        if(minRadius == null || maxRadius == null) throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 재질입니다.");
 
         if((innerRadius > thickness && innerRadius < minRadius) || innerRadius > maxRadius){ // 에러
             Map<String, Object> dataObj = new HashMap<>();

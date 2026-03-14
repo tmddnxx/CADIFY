@@ -1,5 +1,7 @@
 package com.cadify.cadifyWAS.service.file.enumValues.cnc.defaultValue;
 
+import com.cadify.cadifyWAS.exception.CustomLogicException;
+import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.cadify.cadifyWAS.model.dto.files.OptionDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -171,9 +173,8 @@ public enum CNCShipment {
             }
         }
 
-        throw new IllegalArgumentException(
-                String.format("해당하는 옵션 조합이 존재하지 않습니다. 재질: %s, 표면처리: %s, 타입: %s", material, surface, type)
-        );
+        throw new CustomLogicException(ExceptionCode.CALCULATE_SHIPMENT_DATE_FAILED,
+                String.format("해당하는 옵션 조합이 존재하지 않습니다. 재질: %s, 표면처리: %s, 타입: %s", material, surface, type));
     }
 
 

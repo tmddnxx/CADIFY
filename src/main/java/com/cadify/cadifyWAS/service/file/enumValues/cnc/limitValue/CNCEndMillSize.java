@@ -1,5 +1,7 @@
 package com.cadify.cadifyWAS.service.file.enumValues.cnc.limitValue;
 
+import com.cadify.cadifyWAS.exception.CustomLogicException;
+import com.cadify.cadifyWAS.exception.ExceptionCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -71,7 +73,7 @@ public enum CNCEndMillSize {
                 .anyMatch(size -> size.getMaterial().equals(material));
 
         if (!hasMaterial) {
-            throw new IllegalArgumentException("잘못된 재질입니다. \n재질 : " + material);
+            throw new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 재질입니다. \n재질 : " + material);
         }
 
         return Arrays.stream(CNCEndMillSize.values())
@@ -79,7 +81,7 @@ public enum CNCEndMillSize {
                 .filter(size -> size.getMinDiameter() < diameter && diameter <= size.getMaxDiameter())
                 .findFirst()
                 .map(size -> depth <= size.getDepthLimit())
-                .orElseThrow(() -> new IllegalArgumentException("잘못된 재질입니다. \n재질 : " + material));
+                .orElseThrow(() -> new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 재질입니다. \n재질 : " + material));
     }
 
     // 직경에 따른 최대 깊이 찾기
@@ -89,7 +91,7 @@ public enum CNCEndMillSize {
                 .filter(size -> size.getMinDiameter() < diameter && diameter <= size.getMaxDiameter())
                 .map(CNCEndMillSize::getDepthLimit)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("잘못된 재질입니다. \n재질 : " + material));
+                .orElseThrow(() -> new CustomLogicException(ExceptionCode.INVALID_TYPE, "잘못된 재질입니다. \n재질 : " + material));
     }
 
 }
