@@ -12,6 +12,7 @@ import com.cadify.cadifyWAS.repository.member.OAuthMemberRepository;
 import com.cadify.cadifyWAS.security.jwt.JwtPrincipal;
 import com.cadify.cadifyWAS.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemberAgreementService {
     private final OAuthMemberRepository memberRepository;
     private final MemberAgreementRepository agreementRepository;

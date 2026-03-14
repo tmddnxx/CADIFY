@@ -1,5 +1,7 @@
 package com.cadify.cadifyWAS.service.file;
 
+import com.cadify.cadifyWAS.exception.CustomLogicException;
+import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.cadify.cadifyWAS.mapper.EstimateMapper;
 import com.cadify.cadifyWAS.mapper.FilesMapper;
 import com.cadify.cadifyWAS.model.dto.files.EstimateDTO;
@@ -14,7 +16,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -38,7 +40,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-@Log4j2
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FilesTaskService {
@@ -94,7 +96,7 @@ public class FilesTaskService {
                     try {
                         return mapper.readTree(str);
                     } catch (JsonProcessingException e) {
-                        throw new RuntimeException("Failed to parse JSON: " + str, e);
+                        throw new CustomLogicException(ExceptionCode.ESTIMATE_ERROR_JSON, str);
                     }
                 })
                 .collect(Collectors.toList());

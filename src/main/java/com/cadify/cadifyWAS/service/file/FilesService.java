@@ -1,13 +1,20 @@
 package com.cadify.cadifyWAS.service.file;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.cadify.cadifyWAS.model.dto.files.*;
+import com.cadify.cadifyWAS.exception.CustomLogicException;
+import com.cadify.cadifyWAS.exception.ExceptionCode;
+import com.cadify.cadifyWAS.model.dto.files.EstimateDTO;
+import com.cadify.cadifyWAS.model.dto.files.FileTask;
+import com.cadify.cadifyWAS.model.dto.files.FilesDTO;
+import com.cadify.cadifyWAS.model.dto.files.GarbageFilesDTO;
+import com.cadify.cadifyWAS.model.dto.files.OptionDTO;
 import com.cadify.cadifyWAS.model.entity.Files.Estimate;
 import com.cadify.cadifyWAS.repository.Files.EstimateRepository;
 import com.cadify.cadifyWAS.repository.Files.FolderRepository;
 import com.cadify.cadifyWAS.result.ResultCode;
 import com.cadify.cadifyWAS.result.ResultResponse;
 import com.cadify.cadifyWAS.service.file.common.CommentType;
+import com.cadify.cadifyWAS.service.file.common.FileCommon;
 import com.cadify.cadifyWAS.service.file.common.Method;
 import com.cadify.cadifyWAS.service.file.common.MethodType;
 import com.cadify.cadifyWAS.service.file.common.cnc.CNCLimit;
@@ -15,35 +22,44 @@ import com.cadify.cadifyWAS.service.file.common.metal.MetalLimit;
 import com.cadify.cadifyWAS.service.file.rabbitMQ.FileTaskProducer;
 import com.cadify.cadifyWAS.util.JwtUtil;
 import com.cadify.cadifyWAS.util.PrivateValue;
-import com.cadify.cadifyWAS.service.file.common.FileCommon;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.EnumUtils;
 import org.joda.time.DateTime;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.ecs.EcsClient;
-import software.amazon.awssdk.services.ecs.model.*;
+import software.amazon.awssdk.services.ecs.model.AssignPublicIp;
+import software.amazon.awssdk.services.ecs.model.AwsVpcConfiguration;
+import software.amazon.awssdk.services.ecs.model.ContainerOverride;
+import software.amazon.awssdk.services.ecs.model.KeyValuePair;
+import software.amazon.awssdk.services.ecs.model.LaunchType;
+import software.amazon.awssdk.services.ecs.model.NetworkConfiguration;
+import software.amazon.awssdk.services.ecs.model.RunTaskRequest;
+import software.amazon.awssdk.services.ecs.model.RunTaskResponse;
+import software.amazon.awssdk.services.ecs.model.TaskOverride;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.Year;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
-@Log4j2
+@Slf4j
 @Service
 public class FilesService {
 
@@ -66,12 +82,13 @@ public class FilesService {
     private final long FILE_SIZE_LIMIT = 5L * 1024 * 1024 * 1024; // 5GB
 
     // 업로드 요청 보내기 (mq로)
+    @Transactional
     public ResultResponse uploadFiles(List<MultipartFile> files, String folderKey, Method method) throws IOException {
         String memberKey = jwtUtil.getAuthPrincipal();
-        // aa
         List<FilesDTO.StatusResponse> statusResponseList = new ArrayList<>();
+        // 파일 개수 제한 검사
         if (files.size() > 20) {
-            throw new RuntimeException("파일은 한번에 최대 20개까지 업로드 가능합니다.");
+            throw new CustomLogicException(ExceptionCode.FILE_UPLOAD_LIMIT_EXCEEDED);
         }
         long totalFileSize = estimateRepository.findTotalFileSize(memberKey); // 총 파일 사이즈
         long uploadTotalFileSize = 0;
@@ -80,8 +97,9 @@ public class FilesService {
             uploadTotalFileSize += file.getSize();
         }
 
+        // 업로드 용량 제한 검사
         if (totalFileSize + uploadTotalFileSize > FILE_SIZE_LIMIT) {
-            throw new RuntimeException("업로드 용량 초과입니다. \n현재 사용중인 용량 : " + totalFileSize + "\n업로드 용량 : " + uploadTotalFileSize);
+            throw new CustomLogicException(ExceptionCode.FILE_SIZE_EXCEEDED);
         }
 
         // 이미 처리중인 파일이 50개 이상일 경우 예외처리
@@ -89,7 +107,7 @@ public class FilesService {
         int tempKeyCount = tempKeys.size();
         int uploadCount = files.size();
         if (tempKeyCount + uploadCount > 50) {
-            throw new RuntimeException("파일은 최대 50개까지 처리 가능합니다. \n잠시후 다시 시도해주세요.\n현재 처리중인 파일 수  :" + tempKeyCount);
+            throw new CustomLogicException(ExceptionCode.FILE_PROCESSING_LIMIT_EXCEEDED);
         }
 
         for (MultipartFile file : files) {
@@ -187,7 +205,7 @@ public class FilesService {
             String metaJson = Files.readString(Paths.get(outPutPath));
 
             if(metaJson == null){
-                throw new RuntimeException("이용 불가능 한 파일입니다.\n고객센터에 문의해주세요.");
+                throw new CustomLogicException(ExceptionCode.INVALID_FILE);
             }
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -195,13 +213,13 @@ public class FilesService {
             JsonNode parts = root.get("parts");
 
             if (parts == null) {
-                throw new RuntimeException("이용 불가능 한 파일입니다.\n고객센터에 문의해주세요.");
+                throw new CustomLogicException(ExceptionCode.INVALID_FILE);
             }
 
             // 가공타입 확인
             String type = MetalLimit.extractMetalType(parts);
             if(!EnumUtils.isValidEnum(MethodType.class, type)){
-                throw new IllegalArgumentException("가공 불가능한 타입입니다.");
+                throw new CustomLogicException(ExceptionCode.INVALID_FILE_TYPE);
             }
 
             // MetaJson에서 에러코드 찾기 (있으면 에러)
@@ -250,7 +268,7 @@ public class FilesService {
             if (stpFile.length == 0) {
                 deleteFilesInDirectory(dataPath, savedFileName.split(".stp")[0]);
                 deleteFilesInDirectory(outPath, savedFileName.split(".stp")[0]);
-                throw new RuntimeException("파일에 알 수 없는 문제가 있습니다. \n정상적인 솔리드 모델을 업로드 해 주세요");
+                throw new CustomLogicException(ExceptionCode.UNKNOWN_FILE_ERROR);
             }
             log.info("stp 파일 경로 : {}", stpFile[0].getAbsolutePath());
             File imageFile = Objects.requireNonNull(fileDir.listFiles((d, name) -> name.equals((imageFileName))))[0];
@@ -324,7 +342,7 @@ public class FilesService {
                     .build();
         }catch (Exception e){
             handleException(e, s3StepFileKey, s3ImageFileKey); // 예외 발생시 s3파일 삭제 및 garbage 테이블에 저장
-            throw new RuntimeException(e.getMessage());
+            throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, e.getMessage());
         }
     }
 
@@ -347,7 +365,7 @@ public class FilesService {
             String metaJson = Files.readString(Paths.get(outPutPath));
 
             if(metaJson == null){
-                throw new Exception("도커 json 생성 실패");
+                throw new CustomLogicException(ExceptionCode.INVALID_FILE);
             }
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -355,13 +373,13 @@ public class FilesService {
             JsonNode parts = root.get("parts");
 
             if (parts == null) {
-                throw new RuntimeException("이용 불가능 한 파일입니다.\n고객센터에 문의해주세요.");
+                throw new CustomLogicException(ExceptionCode.INVALID_FILE);
             }
 
             // 가공타입 확인
             String type = CNCLimit.extractCnCType(parts);
             if(!EnumUtils.isValidEnum(MethodType.class, type)){
-                throw new IllegalArgumentException("가공 불가능한 타입입니다.");
+                throw new CustomLogicException(ExceptionCode.INVALID_FILE_TYPE);
             }
 
             // MetaJson에서 semanticsCode 찾기 (있으면 에러)
@@ -402,7 +420,7 @@ public class FilesService {
             if (stpFile.length == 0) {
                 deleteFilesInDirectory(dataPath, savedFileName.split(".stp")[0]);
                 deleteFilesInDirectory(outPath, savedFileName.split(".stp")[0]);
-                throw new RuntimeException("파일에 알 수 없는 문제가 있습니다. \n정상적인 솔리드 모델을 업로드 해 주세요");
+                throw new CustomLogicException(ExceptionCode.UNKNOWN_FILE_ERROR);
             }
             log.info("stp 파일 경로 : {}", stpFile[0].getAbsolutePath());
             File imageFile = Objects.requireNonNull(fileDir.listFiles((d, name) -> name.equals(imageFileName)))[0];
@@ -475,7 +493,7 @@ public class FilesService {
                     .build();
         }catch (Exception e){
             handleException(e, s3StepFileKey, s3ImageFileKey); // 예외 발생시 s3파일 삭제 및 garbage 테이블에 저장
-            throw new RuntimeException(e.getMessage());
+            throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, e.getMessage());
         }finally {
             filesTaskService.removeTempKey(memberKey, response.getTempKey()); // 처리 완료된 tempKey 제거
         }
@@ -526,9 +544,9 @@ public class FilesService {
 
         RunTaskResponse response = ecsClient.runTask(request);
 
-        System.out.println("Started task: " + response.tasks());
+        log.info("Started task: {}", response.tasks());
         if (!response.failures().isEmpty()) {
-            System.err.println("Failures: " + response.failures());
+            log.error("Failures: {}", response.failures());
         }
     }
     // ----------------------------------------------------------------------------------------

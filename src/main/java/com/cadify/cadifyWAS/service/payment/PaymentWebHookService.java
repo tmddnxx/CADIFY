@@ -10,27 +10,25 @@ import com.cadify.cadifyWAS.model.entity.payment.Payment;
 import com.cadify.cadifyWAS.repository.OrderItemRepository;
 import com.cadify.cadifyWAS.repository.OrderRepository;
 import com.cadify.cadifyWAS.repository.PaymentRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.Base64;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentWebHookService {
 
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final OrderItemRepository orderItemRepository;
+
+    @Value("${payment.nicepay.secret_api_key}")
     String secretKey;
 
     // 웹훅 받아서 처리

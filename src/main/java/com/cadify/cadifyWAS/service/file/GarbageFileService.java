@@ -6,7 +6,7 @@ import com.cadify.cadifyWAS.model.dto.files.GarbageFilesDTO;
 import com.cadify.cadifyWAS.model.entity.Files.GarbageFiles;
 import com.cadify.cadifyWAS.repository.Files.GarbageFilesRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @RequiredArgsConstructor
-@Log4j2
+@Slf4j
 @Service
 public class GarbageFileService {
 

@@ -96,7 +96,7 @@ public class CompanyManagerService {
 
         companyManagerRepository.save(manager);
 
-        return null;
+        return companyManagerRepository.findCompanyManagerList(principal.getMemberKey());
     }
 
     // 회사 정보 조회

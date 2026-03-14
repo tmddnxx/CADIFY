@@ -18,11 +18,11 @@ import com.cadify.cadifyWAS.model.dto.cart.CartItemDTO;
 import com.cadify.cadifyWAS.repository.CartItemRepository;
 import com.cadify.cadifyWAS.repository.CartRepository;
 import com.cadify.cadifyWAS.repository.Files.EstimateRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

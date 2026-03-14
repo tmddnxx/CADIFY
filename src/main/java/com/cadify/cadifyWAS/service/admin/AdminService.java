@@ -3,49 +3,33 @@ package com.cadify.cadifyWAS.service.admin;
 import com.cadify.cadifyWAS.exception.CustomLogicException;
 import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.cadify.cadifyWAS.mapper.EstimateMapper;
+import com.cadify.cadifyWAS.mapper.FactoryAdminMapper;
 import com.cadify.cadifyWAS.model.dto.admin.estimate.AdminEstimateDTO;
-import com.cadify.cadifyWAS.model.dto.files.EstimateDTO;
+import com.cadify.cadifyWAS.model.dto.factory.FactoryAdminDTO;
 import com.cadify.cadifyWAS.model.entity.Files.Estimate;
 import com.cadify.cadifyWAS.model.entity.Files.QEstimate;
 import com.cadify.cadifyWAS.model.entity.Files.QFiles;
-import com.cadify.cadifyWAS.repository.OrderItemRepository;
-import com.cadify.cadifyWAS.repository.OrderRepository;
-import com.cadify.cadifyWAS.repository.admin.estimate.AdminEstimateQueryRepository;
-import com.cadify.cadifyWAS.mapper.FactoryAdminMapper;
-import com.cadify.cadifyWAS.model.dto.factory.FactoryAdminDTO;
 import com.cadify.cadifyWAS.model.entity.factory.FactoryAdmin;
 import com.cadify.cadifyWAS.model.entity.member.MemberRole;
-import com.cadify.cadifyWAS.repository.OrderItemRepository;
-import com.cadify.cadifyWAS.repository.OrderRepository;
+import com.cadify.cadifyWAS.repository.admin.estimate.AdminEstimateQueryRepository;
 import com.cadify.cadifyWAS.repository.factory.FactoryRepository;
 import com.cadify.cadifyWAS.repository.factory.admin.FactoryAdminRepository;
-import com.cadify.cadifyWAS.repository.member.OAuthMemberRepository;
-import com.cadify.cadifyWAS.result.ResultCode;
-import com.cadify.cadifyWAS.result.ResultResponse;
 import com.cadify.cadifyWAS.security.jwt.JwtPrincipal;
 import com.cadify.cadifyWAS.util.JwtUtil;
 import com.cadify.cadifyWAS.util.PrivateValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import org.springdoc.core.service.GenericResponseService;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-@Log4j2
+@Slf4j
 @Service
 public class AdminService {
 
@@ -71,7 +55,7 @@ public class AdminService {
                     try {
                         response = estimateMapper.estimateResponseToAdmin(estimate);
                     } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
+                        throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED);
                     }
                     response.setStepS3(tuple.get(QFiles.files.s3StepAddress)); // S3 URL 추출
                     response.setImageUrl(tuple.get(QFiles.files.imageAddress)); // S3 URL 추출
@@ -89,7 +73,7 @@ public class AdminService {
         try {
             response = estimateMapper.estimateResponseToAdmin(estimate);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED);
         }
         response.setStepS3(tuple.get(QFiles.files.s3StepAddress)); // S3 URL 추출
         response.setImageUrl(tuple.get(QFiles.files.imageAddress)); // S3 URL 추출

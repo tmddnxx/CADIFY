@@ -96,7 +96,7 @@ public class OAuthMemberService {
         oAuthMemberRepository.save(member);
 
 
-        log.info("After Assign Role : " + member.getRole());
+        log.info("After Assign Role : {}", member.getRole());
 
         // role 변경에 따른 새로운 토큰 전달
         String newAccessToken = jwtProvider.generateAccessToken(member.getMemberKey(), LoginType.OAUTH2, member.getRole());

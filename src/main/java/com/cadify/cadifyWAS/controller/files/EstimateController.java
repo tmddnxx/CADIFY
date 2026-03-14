@@ -73,7 +73,7 @@ public class EstimateController {
 
     // 뷰어에서 모델링 dxf 파일 업로드
     @PatchMapping(value = "/dxf/{estKey}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<EstimateDTO.StatusResponse> patchDxf(@PathVariable("estKey") String estKey, @RequestPart("file") MultipartFile file) throws Exception {
+    public ResponseEntity<EstimateDTO.StatusResponse> patchDxf(@PathVariable("estKey") String estKey, @RequestPart("file") MultipartFile file) {
         String memberKey = jwtUtil.getAuthPrincipal();
         EstimateDTO.StatusResponse statusResponse = estimateService.patchDxf(memberKey, estKey, file);
         return ResponseEntity.ok(statusResponse);

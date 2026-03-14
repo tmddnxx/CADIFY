@@ -5,6 +5,7 @@ import com.cadify.cadifyWAS.service.file.EstimateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class PaymentEstimateFacade {
 
     private final EstimateService estimateService;
 
+    @Transactional
     public List<EstimateDTO.EstimateValidStatus> getEstimateValidStatusList(List<String> estKeys) {
         return estimateService.reValidEstimates(estKeys);
     }

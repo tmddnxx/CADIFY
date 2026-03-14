@@ -5,7 +5,7 @@ import com.cadify.cadifyWAS.model.dto.files.FileTask;
 import com.cadify.cadifyWAS.util.PrivateValue;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,7 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
-@Log4j2
+@Slf4j
 @Service
 public class SdkService {
 
@@ -61,7 +61,7 @@ public class SdkService {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    System.out.println(line);  // 로그 출력
+                    log.info(line);
                 }
             }
 
@@ -82,7 +82,7 @@ public class SdkService {
                 Process downProcess = downProcessBuilder.start();
                 int downExitCode = downProcess.waitFor();  // down 명령어가 완료될 때까지 대기
                 if (downExitCode == 0) {
-                    System.out.println("컨테이너가 성공적으로 삭제되었습니다.");
+                    log.info("컨테이너가 성공적으로 삭제되었습니다.");
                 }
 
                 return findDxfFileForUpload(memberKey, fileName);
@@ -92,7 +92,7 @@ public class SdkService {
                 return null;
             }
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            log.error("Docker 실행 중 오류 발생: {}", e.getMessage(), e);
         }
         return null;
     }
@@ -112,7 +112,7 @@ public class SdkService {
                 log.info("컨테이너 삭제 실패, 코드 : {}", exitCode);
             }
         }  catch (Exception e) {
-            e.printStackTrace();
+            log.error("컨테이너 삭제 중 오류 발생: {}", e.getMessage(), e);
         }
     }
 
@@ -138,17 +138,17 @@ public class SdkService {
     // 네트워크를 생성하는 메서드
     public boolean createDockerNetwork(String networkName) throws Exception {
         if (isDockerNetworkExists(networkName)) {
-            System.out.println("Network " + networkName + " already exists.");
+            log.info("Network {} already exists.", networkName);
             return true;  // 이미 네트워크가 존재하면 성공으로 간주
         }
 
         Process createProcess = new ProcessBuilder(privateValue.getOriginDockerPath(), "network", "create", networkName).start();
         int exitCode = createProcess.waitFor();
         if (exitCode == 0) {
-            System.out.println("Network " + networkName + " created successfully.");
+            log.info("Network {} created successfully.", networkName);
             return true;
         } else {
-            System.err.println("Failed to create network " + networkName + ". Exit code: " + exitCode);
+            log.error("Failed to create network {}. Exit code: {}", networkName, exitCode);
             return false;
         }
     }
@@ -174,7 +174,7 @@ public class SdkService {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("DXF 파일 탐색 중 오류 발생: {}", e.getMessage(), e);
         }
 
         return null; // 파일을 찾지 못한 경우 null 반환

@@ -112,7 +112,7 @@ public class FactoryDashboardService {
     // 인증객체를 사용해서 FactoryType 조회
     private Factory getValidFactory() {
         JwtPrincipal principal = jwtUtil.getAuthPrincipalObject();
-        log.info("getValidFactory() -> memberKey : " + principal.getMemberKey());
+        log.info("getValidFactory() -> memberKey : {}", principal.getMemberKey());
         // 인증객체의 역할이 Factory 인지 확인
         if (principal.getRole() != MemberRole.FACTORY && principal.getRole() != MemberRole.ADMIN) {
             throw new CustomLogicException(ExceptionCode.NOT_FACTORY_ADMIN);

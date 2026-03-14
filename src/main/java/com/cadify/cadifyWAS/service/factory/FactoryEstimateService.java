@@ -28,7 +28,7 @@ public class FactoryEstimateService {
         try {
             estimateResponse = factoryMapper.estimateToResponse(tuple);
         } catch (JsonProcessingException e) {
-            throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED);
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_ERROR_JSON);
         }
         estimateResponse.setDxfName(FileCommon.extractDxfFileName(estimateResponse.getS3DxfAddress()));
         return estimateResponse;

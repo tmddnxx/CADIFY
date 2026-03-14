@@ -9,6 +9,7 @@ import com.cadify.cadifyWAS.repository.factory.estimate.KFactorRepository;
 import com.cadify.cadifyWAS.service.file.enumValues.metal.limitValue.material.MetalMaterialByThickness;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +27,7 @@ public class KFactorService {
 
     private final KFactorRepository kFactorRepository;
 
+    @Transactional
     public void upsertKFactors(List<KFactorDTO.Upsert> kFactorDTOList) {
         List<OptionDTO.OptionType> optionTypes = MetalMaterialByThickness.getAllThicknessListByMaterial();
         Map<String, List<Double>> validMap = optionTypes.stream()
