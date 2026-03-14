@@ -2,7 +2,11 @@ package com.cadify.cadifyWAS.model.entity.member;
 
 import com.cadify.cadifyWAS.model.dto.member.MemberDTO;
 import com.cadify.cadifyWAS.util.base.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

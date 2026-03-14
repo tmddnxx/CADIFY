@@ -4,7 +4,11 @@ import com.cadify.cadifyWAS.service.file.common.CommentType;
 import com.cadify.cadifyWAS.service.file.common.EstimateStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.domain.Page;
 

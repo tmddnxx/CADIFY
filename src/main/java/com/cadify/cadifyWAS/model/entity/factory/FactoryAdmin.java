@@ -2,9 +2,16 @@ package com.cadify.cadifyWAS.model.entity.factory;
 
 import com.cadify.cadifyWAS.model.entity.member.MemberRole;
 import com.cadify.cadifyWAS.util.base.BaseEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import jakarta.persistence.Version;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter

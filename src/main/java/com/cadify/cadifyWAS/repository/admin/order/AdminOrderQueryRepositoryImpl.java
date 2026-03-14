@@ -1,7 +1,12 @@
 package com.cadify.cadifyWAS.repository.admin.order;
 
 import com.cadify.cadifyWAS.model.dto.admin.dashboard.OrderCardResponse;
-import com.cadify.cadifyWAS.model.dto.admin.order.*;
+import com.cadify.cadifyWAS.model.dto.admin.order.AdminOrderDTO;
+import com.cadify.cadifyWAS.model.dto.admin.order.CalendarOrderCountsResponse;
+import com.cadify.cadifyWAS.repository.admin.order.OrderColumn;
+import com.cadify.cadifyWAS.model.dto.admin.order.OrderDetails;
+import com.cadify.cadifyWAS.model.dto.admin.order.OrderResponse;
+import com.cadify.cadifyWAS.model.dto.admin.order.SettlementCardsResponse;
 import com.cadify.cadifyWAS.model.entity.QAddress;
 import com.cadify.cadifyWAS.model.entity.factory.Factory;
 import com.cadify.cadifyWAS.model.entity.factory.QFactory;
@@ -13,14 +18,22 @@ import com.cadify.cadifyWAS.repository.util.QueryDslUtils;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.*;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.core.types.dsl.StringTemplate;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -69,7 +82,7 @@ public class AdminOrderQueryRepositoryImpl implements AdminOrderQueryRepository 
                         QueryDslUtils.eqString(orderItem.method, request.getMethod()),
                         // orderItem 재질
                         QueryDslUtils.eqString(orderItem.material, request.getMaterial()),
-                        // status
+                        // 주문 상태
                         QueryDslUtils.eqEnumArr(order.orderReceivedStatus, request.getStatus())
                 )
                 .groupBy(order.orderKey, order.createdAt, member.memberName, order.shipmentDate, order.totalPrice, order.orderReceivedStatus)

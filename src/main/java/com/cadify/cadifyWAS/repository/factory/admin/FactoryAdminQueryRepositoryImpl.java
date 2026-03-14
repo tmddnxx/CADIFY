@@ -11,8 +11,8 @@ import org.springframework.stereotype.Repository;
 public class FactoryAdminQueryRepositoryImpl implements FactoryAdminQueryRepository {
 
     private final JPAQueryFactory queryFactory;
-    private final QFactory qFactory = QFactory.factory;
-    private final QFactoryAdmin qAdmin = QFactoryAdmin.factoryAdmin;
+    private static final QFactory qFactory = QFactory.factory;
+    private static final QFactoryAdmin qAdmin = QFactoryAdmin.factoryAdmin;
 
     public FactoryAdminQueryRepositoryImpl(EntityManager em){
         this.queryFactory = new JPAQueryFactory(em);

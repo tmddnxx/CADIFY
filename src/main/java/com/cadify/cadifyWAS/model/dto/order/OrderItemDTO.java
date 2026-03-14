@@ -3,7 +3,11 @@ package com.cadify.cadifyWAS.model.dto.order;
 import com.cadify.cadifyWAS.model.entity.order.OrderReceivedStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 

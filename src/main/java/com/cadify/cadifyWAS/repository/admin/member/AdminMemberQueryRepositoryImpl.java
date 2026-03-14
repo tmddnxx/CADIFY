@@ -25,8 +25,8 @@ public class AdminMemberQueryRepositoryImpl implements AdminMemberQueryRepositor
 
     private final JPAQueryFactory queryFactory;
 
-    private final QOAuthMember member = QOAuthMember.oAuthMember;
-    private final QOrders order = QOrders.orders;
+    private static final QOAuthMember member = QOAuthMember.oAuthMember;
+    private static final QOrders order = QOrders.orders;
 
     public AdminMemberQueryRepositoryImpl(EntityManager em){
         this.queryFactory = new JPAQueryFactory(em);
@@ -106,7 +106,7 @@ public class AdminMemberQueryRepositoryImpl implements AdminMemberQueryRepositor
     }
 
 
-// BEGIN:
+// 내부 필터 메서드
     // 주문수 필터
     private BooleanExpression getOrderCountExpression(String orderCount){
         if (!StringUtils.hasText(orderCount) || "all".equalsIgnoreCase(orderCount)) return null;
@@ -154,6 +154,6 @@ public class AdminMemberQueryRepositoryImpl implements AdminMemberQueryRepositor
                 .or(member.email.containsIgnoreCase(search))
                 .or(member.phone.containsIgnoreCase(search));
     }
-// END
+// 내부 필터 메서드 끝
 
 }

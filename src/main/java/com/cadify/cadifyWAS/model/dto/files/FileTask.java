@@ -1,7 +1,11 @@
 package com.cadify.cadifyWAS.model.dto.files;
 
 import com.cadify.cadifyWAS.service.file.common.Method;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

@@ -2,7 +2,11 @@ package com.cadify.cadifyWAS.model.dto.factory.estimate;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public class KFactorDTO {
 
