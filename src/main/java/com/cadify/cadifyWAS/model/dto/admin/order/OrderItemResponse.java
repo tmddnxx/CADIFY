@@ -1,13 +1,15 @@
 package com.cadify.cadifyWAS.model.dto.admin.order;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@AllArgsConstructor
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class OrderItemResponse {
     private AdminOrderDTO.OrderDetailRes orderDetail;

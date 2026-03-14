@@ -4,12 +4,14 @@ import com.cadify.cadifyWAS.model.entity.order.OrderReceivedStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
 public class FactoryOrderDTO {
 
     @Getter
+    @Setter
     @NoArgsConstructor
     public static class OrderItemRequest {
         private String orderKey;
@@ -17,6 +19,7 @@ public class FactoryOrderDTO {
     }
 
     @Getter
+    @Setter
     @NoArgsConstructor
     public static class RejectRequest {
         private String orderKey;
@@ -26,6 +29,7 @@ public class FactoryOrderDTO {
     }
 
     @Getter
+    @Setter
     @NoArgsConstructor
     public static class StartShippingRequest {
         private String courier;
@@ -35,6 +39,7 @@ public class FactoryOrderDTO {
     }
 
     @Getter
+    @Setter
     @NoArgsConstructor
     public static class ConfirmRequest {
         private String orderKey;

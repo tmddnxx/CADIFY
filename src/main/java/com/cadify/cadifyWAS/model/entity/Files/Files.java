@@ -1,6 +1,7 @@
 package com.cadify.cadifyWAS.model.entity.Files;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,6 +17,9 @@ public class Files {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 파일 pk
+
+    @Version
+    private Long version;
 
     @Column(nullable = false, unique = true)
     private String fileKey; // 파일 pk

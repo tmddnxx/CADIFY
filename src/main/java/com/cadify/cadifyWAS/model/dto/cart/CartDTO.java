@@ -1,17 +1,12 @@
 package com.cadify.cadifyWAS.model.dto.cart;
 
-import com.cadify.cadifyWAS.model.entity.cart.Cart;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class CartDTO {
 
@@ -34,6 +29,8 @@ public class CartDTO {
 
     @Getter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class GetCartResponse{
         private List<CartItemDTO.GetCartResponse> cartItemList;
         private int cartTotalPrice;

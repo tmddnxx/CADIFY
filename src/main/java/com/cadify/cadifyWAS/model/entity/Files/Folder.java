@@ -1,6 +1,7 @@
 package com.cadify.cadifyWAS.model.entity.Files;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +26,9 @@ public class Folder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 폴더 pk
+
+    @Version
+    private Long version;
 
     @Column(nullable = false, unique = true)
     private String folderKey; // 폴더 퍼블릭 키 (UUID)

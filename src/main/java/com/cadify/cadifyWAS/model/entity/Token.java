@@ -16,6 +16,9 @@ public class Token {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long tokenKey;  // 토큰 식별 키
+
+    @Version
+    private Long version;
     @Column(nullable = false)
     private String memberKey;   // 토큰 소유 회원 식별 키
     @Column(nullable = false, unique = true)

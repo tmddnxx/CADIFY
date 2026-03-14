@@ -3,6 +3,7 @@ package com.cadify.cadifyWAS.model.entity.factory;
 import com.cadify.cadifyWAS.model.entity.member.MemberRole;
 import com.cadify.cadifyWAS.util.base.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.persistence.Version;
 import lombok.*;
 
 @Entity
@@ -14,6 +15,9 @@ public class FactoryAdmin extends BaseEntity {
 
     @Id
     private String memberKey;   // 회원 공통 식별키
+
+    @Version
+    private Long version;
 
     @Column(unique = true, nullable = false)
     private String username;    // 관리자 로그인 아이디

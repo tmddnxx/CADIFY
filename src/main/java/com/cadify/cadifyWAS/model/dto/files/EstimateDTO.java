@@ -169,23 +169,27 @@ public class EstimateDTO {
     }
 
     @Getter
+    @NoArgsConstructor
     public static class Request{
         private String stpUrl;
     }
 
     @Getter
+    @NoArgsConstructor
     public static class MemoPut{
         private String estKey; // 견적 pk
         private String memo; // 메모
     }
 
     @Getter
+    @NoArgsConstructor
     public static class MoveFolder{
         private List<String> estKeys; // 견적 pk
         private String folderKey; // 폴더 pk
     }
 
     @Getter
+    @NoArgsConstructor
     public static class Delete{
         private List<String> estKeys; // 견적 pk
     }

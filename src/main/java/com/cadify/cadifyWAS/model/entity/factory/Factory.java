@@ -2,6 +2,7 @@ package com.cadify.cadifyWAS.model.entity.factory;
 
 import com.cadify.cadifyWAS.util.base.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,6 +17,9 @@ public class Factory extends BaseEntity {
 
     @Id
     private String factoryKey;  // 식별 키
+
+    @Version
+    private Long version;
 
     @Column(nullable = false, unique = true)
     private String factoryName; // 공장 이름

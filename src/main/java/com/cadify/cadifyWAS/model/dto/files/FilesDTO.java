@@ -19,7 +19,6 @@ public class FilesDTO {
         private String metaJson; // metaJson
     }
 
-    @Setter
     @Getter
     @Builder
     @NoArgsConstructor

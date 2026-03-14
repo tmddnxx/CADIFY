@@ -15,6 +15,9 @@ public class MemberAgreement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    private Long version;
+
     @Column(nullable = false)
     private String memberKey;   // 사용자 식별 키
 

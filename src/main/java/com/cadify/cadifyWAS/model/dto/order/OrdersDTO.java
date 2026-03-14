@@ -32,9 +32,9 @@ public class OrdersDTO {
 
     //주문 전체 조회
     @Getter
-    @Setter
     @Builder
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class AllResponse {
 
         //주문 정보
@@ -49,9 +49,9 @@ public class OrdersDTO {
 
     // 주문 단건 조회
     @Getter
-    @Setter
     @Builder
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class Response{
         private String orderKey;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -70,15 +70,17 @@ public class OrdersDTO {
     }
 
     @Getter
-    @Setter
     @Builder
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class CreateResponse{
         private String orderKey;
     }
 
     @Getter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class SuccessResponse{
         private String orderKey;
         private LocalDateTime orderAt;

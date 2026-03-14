@@ -5,6 +5,7 @@ import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.cadify.cadifyWAS.service.file.enumValues.common.Shipment;
 import com.cadify.cadifyWAS.util.base.BaseTimeEntity;
 import jakarta.persistence.*;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +26,9 @@ public class CartItem extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long cartItemKey;
+
+    @Version
+    private Long version;
 
     @NotNull
     private Long cartKey;

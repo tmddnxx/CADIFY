@@ -3,6 +3,7 @@ package com.cadify.cadifyWAS.model.entity.member;
 import com.cadify.cadifyWAS.model.dto.member.MemberDTO;
 import com.cadify.cadifyWAS.util.base.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +19,9 @@ import java.util.Optional;
 public class OAuthMember extends BaseEntity {
     @Id
     private String memberKey;   // PK
+
+    @Version
+    private Long version;
     @Column(nullable = false)
     private String memberName;   // 이름
     @Column(nullable = false, unique = true)

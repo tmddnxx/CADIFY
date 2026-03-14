@@ -3,6 +3,7 @@ package com.cadify.cadifyWAS.model.entity.Files;
 import com.cadify.cadifyWAS.service.file.common.Method;
 import com.cadify.cadifyWAS.util.base.BaseTimeEntity;
 import jakarta.persistence.*;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,9 @@ public class FileUploadFailedLog extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Version
+    private Long version;
 
     @Column
     private String memberKey;

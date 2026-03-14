@@ -4,6 +4,7 @@ import com.cadify.cadifyWAS.model.dto.payment.NicePaymentWebHookDTO;
 import com.cadify.cadifyWAS.util.base.BaseTimeEntity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +21,9 @@ public class Payment extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String paymentKey;
+
+    @Version
+    private Long version;
 
     private String resultCode;
 

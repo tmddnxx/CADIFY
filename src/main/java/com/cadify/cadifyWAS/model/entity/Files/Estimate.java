@@ -25,6 +25,9 @@ public class Estimate extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 견적 pk
 
+    @Version
+    private Long version;
+
     @Column(nullable = false, unique = true)
     private String estKey; // 견적 퍼블릭 키 (UUID)
 

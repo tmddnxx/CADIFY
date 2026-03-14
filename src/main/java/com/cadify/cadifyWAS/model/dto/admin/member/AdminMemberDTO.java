@@ -1,15 +1,16 @@
 package com.cadify.cadifyWAS.model.dto.admin.member;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public class AdminMemberDTO {
 
+    @Getter
+    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    @Data
     public static class FilteredMemberRequest {
         private String companyName = "";
         private String orderCount = "";

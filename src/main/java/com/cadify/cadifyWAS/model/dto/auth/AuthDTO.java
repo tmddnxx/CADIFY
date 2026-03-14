@@ -10,6 +10,8 @@ public class AuthDTO {
 
     @Builder
     @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class RefreshTokenInfo{
         private String refreshToken;
     }
@@ -30,6 +32,8 @@ public class AuthDTO {
 
     @Builder
     @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class AuthSMSResponse{
         private String authCode;
         private String expiredAt;

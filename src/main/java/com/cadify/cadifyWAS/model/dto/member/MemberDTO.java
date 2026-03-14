@@ -2,11 +2,14 @@ package com.cadify.cadifyWAS.model.dto.member;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 public class MemberDTO {
 
     @Builder
     @Getter
+    @NoArgsConstructor
     public static class MemberInfo{
         private String memberName;
         private String email;
@@ -25,8 +28,9 @@ public class MemberDTO {
         }
     }
 
-    @Builder
     @Getter
+    @Setter
+    @NoArgsConstructor
     public static class UpdateMember{
         private String memberName;
     }

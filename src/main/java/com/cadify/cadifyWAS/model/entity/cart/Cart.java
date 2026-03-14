@@ -2,6 +2,7 @@ package com.cadify.cadifyWAS.model.entity.cart;
 
 import com.cadify.cadifyWAS.util.base.BaseTimeEntity;
 import jakarta.persistence.*;
+import jakarta.persistence.Version;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,9 @@ public class Cart extends BaseTimeEntity {
     @Id
     @GeneratedValue
     private Long cartKey;
+
+    @Version
+    private Long version;
 
     private String memberKey;
 
