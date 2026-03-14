@@ -6,19 +6,26 @@ import com.cadify.cadifyWAS.model.dto.files.OptionDTO;
 import com.cadify.cadifyWAS.result.ResultCode;
 import com.cadify.cadifyWAS.result.ResultResponse;
 import com.cadify.cadifyWAS.service.file.FilesTaskService;
-import com.cadify.cadifyWAS.service.file.common.Method;
-import com.cadify.cadifyWAS.service.file.enumValues.common.*;
+import com.cadify.cadifyWAS.service.file.enumValues.common.CommonDiff;
+import com.cadify.cadifyWAS.service.file.enumValues.common.Material;
+import com.cadify.cadifyWAS.service.file.enumValues.common.Roughness;
+import com.cadify.cadifyWAS.service.file.enumValues.common.Surface;
 import com.cadify.cadifyWAS.service.file.enumValues.metal.limitValue.material.MetalMaterialByThickness;
 import com.cadify.cadifyWAS.service.file.rabbitMQ.FileTaskProducer;
 import com.cadify.cadifyWAS.util.JwtUtil;
 import com.cadify.cadifyWAS.service.file.FilesService;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -29,7 +36,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/file")
-@Log4j2
+@Slf4j
 public class  FileController {
 
     private final FilesService filesService;
@@ -127,21 +134,14 @@ public class  FileController {
     // 후처리 (lamda to ecs)
     @PostMapping("/task/complete")
     public void receiveTaskComplete(@RequestBody FileTask fileTask) {
-        System.out.println("✅ Fargate 작업 완료 콜백 수신:");
-        System.out.println("step 저장 파일명: " + fileTask.getStepName());
-        System.out.println("json 파일명: " + fileTask.getJsonName());
-        System.out.println("멤버키: " + fileTask.getMemberKey());
-        System.out.println("출력 경로: " + fileTask.getJsonOutPath());
-        System.out.println("타입: " + fileTask.getMethod());
+        log.info("Fargate 작업 완료 콜백 수신:");
+        log.info("step 저장 파일명: {}", fileTask.getStepName());
+        log.info("json 파일명: {}", fileTask.getJsonName());
+        log.info("멤버키: {}", fileTask.getMemberKey());
+        log.info("출력 경로: {}", fileTask.getJsonOutPath());
+        log.info("타입: {}", fileTask.getMethod());
 
-        if (fileTask.getMethod() == Method.METAL ) {
-            fileTaskProducer.sendByMetalResult(fileTask);
-        } else if (fileTask.getMethod() == Method.CNC) {
-            fileTaskProducer.sendByCNCResult(fileTask);
-        } else {
-            log.error("알 수 없는 작업 타입: {}", fileTask.getMethod());
-            throw new IllegalArgumentException("알 수 없는 작업 타입: " + fileTask.getMethod());
-        }
+        fileTaskProducer.sendByResult(fileTask);
     }
 
     @GetMapping("/stream")

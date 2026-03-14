@@ -4,18 +4,24 @@ import com.cadify.cadifyWAS.model.dto.admin.member.AdminMemberDTO;
 import com.cadify.cadifyWAS.model.dto.admin.member.FilteredMemberResponse;
 import com.cadify.cadifyWAS.model.dto.admin.member.PersonalOrderResponse;
 import com.cadify.cadifyWAS.service.admin.AdminMemberService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin/user")
-@Log4j2
 public class AdminMemberController {
 
     private final AdminMemberService adminMemberService;
@@ -33,7 +39,7 @@ public class AdminMemberController {
 
     // 회원별 주문내역 조회
     @PostMapping("/orders")
-    public ResponseEntity<List<PersonalOrderResponse>> getPersonalOrderList(@RequestBody AdminMemberDTO.PersonalOrderRequest request){
+    public ResponseEntity<List<PersonalOrderResponse>> getPersonalOrderList(@Valid @RequestBody AdminMemberDTO.PersonalOrderRequest request){
         List<PersonalOrderResponse> response = adminMemberService.getPersonalOrderList(request);
 
         return new ResponseEntity<>(response, HttpStatus.OK);

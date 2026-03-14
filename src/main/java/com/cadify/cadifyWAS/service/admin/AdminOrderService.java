@@ -36,9 +36,12 @@ public class AdminOrderService {
     // 배송지 repository
     private final AddressRepository addressRepository;
 
-    // 관리자 페이지 Order 조회
+    // 관리자 페이지 Order 조회 (dateBy 문자열을 OrderColumn으로 변환 후 조회)
     @Transactional(readOnly = true)
-    public List<OrderResponse> getOrders(AdminOrderDTO.OrderRequest request, OrderColumn column){
+    public List<OrderResponse> getOrders(AdminOrderDTO.OrderRequest request){
+        OrderColumn column = request.getDateBy().equalsIgnoreCase(OrderColumn.SHIPMENT.toString())
+                ? OrderColumn.SHIPMENT
+                : OrderColumn.CREATED;
         return adminOrderRepository.getOrders(request, column);
     }
 

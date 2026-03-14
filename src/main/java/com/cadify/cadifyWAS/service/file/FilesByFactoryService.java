@@ -27,7 +27,9 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -209,6 +211,23 @@ public class FilesByFactoryService {
 
 
 
+
+    // 견적 관련 파일 URL 목록 반환 (step, dxf 사용자, dxf 공장)
+    public List<String> getEstimateFileUrls(String estKey) {
+        String stepFileUrl = downloadStepFile(estKey);
+        String dxfFileUrl = downloadDxfByUser(estKey);
+        String dxfFactoryFileUrl = null;
+        try {
+            dxfFactoryFileUrl = downloadDxfByFactory(estKey);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        List<String> fileUrls = new ArrayList<>();
+        if (stepFileUrl != null) fileUrls.add(stepFileUrl);
+        if (dxfFileUrl != null) fileUrls.add(dxfFileUrl);
+        if (dxfFactoryFileUrl != null) fileUrls.add(dxfFactoryFileUrl);
+        return fileUrls;
+    }
 
     // 사용자가 dxf 파일을 올렸는지 확인
     public boolean findOwnerDxfURL(Long estKey) throws Exception {

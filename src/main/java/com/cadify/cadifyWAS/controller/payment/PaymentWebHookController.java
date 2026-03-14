@@ -4,6 +4,7 @@ import com.cadify.cadifyWAS.model.dto.payment.NicePaymentWebHookDTO;
 import com.cadify.cadifyWAS.result.ResultCode;
 import com.cadify.cadifyWAS.result.ResultResponse;
 import com.cadify.cadifyWAS.service.payment.PaymentWebHookService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class PaymentWebHookController {
     private final PaymentWebHookService paymentWebHookService;
 
     @PostMapping()
-    public ResponseEntity<String> receiveWebHook(@RequestBody NicePaymentWebHookDTO.Request webHookRequest) throws IOException, InterruptedException {
+    public ResponseEntity<String> receiveWebHook(@Valid @RequestBody NicePaymentWebHookDTO.Request webHookRequest) throws IOException, InterruptedException {
         log.info("웹훅 API 들어옴");
         paymentWebHookService.receiveWebHook(webHookRequest);
 
