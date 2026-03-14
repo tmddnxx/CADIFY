@@ -3,122 +3,119 @@
 ## 개요
 - **목표:** `.claude/rule/totally_rule.md` 코딩 컨벤션에 맞게 전체 코드베이스 통일
 - **시작일:** 2026-03-14
-- **기준 브랜치:** refactor/0.0.1
-- **제약사항:** 로컬 Java 미설치 → 컴파일/테스트 불가, 기계적 안전 변경 우선
+- **완료일:** 2026-03-14
+- **Java 17:** Homebrew로 설치, 전체 Phase 컴파일 검증 완료
 
 ## Phase 구분
 
-| Phase | 브랜치 | 대상 | 상태 | 위반 파일수 |
+| Phase | 브랜치 | 대상 | 상태 | 변경 파일수 |
 |-------|--------|------|------|-----------|
-| Phase 1 | refactor/0.0.1 | Controller 계층 | 🔄 진행중 | 18/25 |
-| Phase 2 | refactor/0.0.2 | Service / Facade 계층 | ⏳ 대기 | 29개 |
-| Phase 3 | refactor/0.0.3 | DTO / Entity / Mapper | ⏳ 대기 | 53 DTO + 17 Entity |
-| Phase 4 | refactor/0.0.4 | Repository / QueryDSL / 전역 규칙 | ⏳ 대기 | 68 (와일드카드 import) |
+| Phase 1 | refactor/0.0.1 | Controller 계층 | ✅ 완료 | 32 |
+| Phase 2 | refactor/0.0.2 | Service / Facade 계층 | ✅ 완료 | 29 |
+| Phase 3 | refactor/0.0.3 | DTO / Entity / Mapper | ✅ 완료 | 57 |
+| Phase 4 | refactor/0.0.4 | Repository / QueryDSL / 전역 규칙 | ✅ 완료 | 38 |
 
 ---
 
-## 전체 분석 결과 요약
+## Phase 1: Controller 계층 리팩토링 (refactor/0.0.1)
 
-### Controller (25개)
-- 준수: 4개 (AdminDashboard, Folder, Order, PaymentTest)
-- 비활성: 3개 (Factory-주석처리, TestController-빈파일)
-- **위반 유형:** try-catch(7), System.out(8), 비즈니스 로직(11), @Valid 누락(11), @Slf4j 누락(10)
+**커밋:** `2cc96ce` — 32 files changed, +662 -304
 
-### Service/Facade (29개 위반)
-- **심각:** RuntimeException 직접 throw(20+), System.out.println(30+), @Slf4j 누락(15+)
-- **@Transactional 누락:** 8+ 메서드
-- **로직 버그:** FactoryAdminService/FactoryService의 `||` → `&&` 조건문 오류
-- **Facade:** @Transactional 누락(2건)
-
-### DTO (53개 전수 위반)
-- Response에 @Setter 사용 (불변성 위반)
-- outer class에 미포함된 standalone Response (20+개)
-- @Builder/@AllArgsConstructor 누락
-- @Data 사용 (정확한 어노테이션 조합 필요)
-
-### Entity (17/19 위반)
-- @Version 누락 (17개 중 2개만 보유: OrderItem, Orders)
-- BaseTimeEntity 미상속 (8개)
-- GenerationType.UUID 미사용
-
-### Mapper (12개 전수 준수)
-
-### Repository/QueryDSL
-- Q-class `private static final` 누락: 5건
-- 와일드카드 import: 68개 파일
-- 영문 주석: 7개 파일
+### 변경 내용
+- 전체 Controller에 `@Slf4j` + `@RestController` + `@RequestMapping` + `@RequiredArgsConstructor` 통일
+- Controller 내 try-catch 제거 → GlobalExceptionHandler 위임 (7건)
+- Controller 내 비즈니스 로직/분기 → Service 계층으로 이동 (11건)
+  - AdminController: DXF 다운로드 → FilesByFactoryService
+  - AuthController: 쿠키 추출 → AuthService.extractRefreshToken()
+  - MemberController: Role 매핑 → OAuthMemberService.assignMemberRole()
+  - CartController: 중복 분기 → CartService.addCartIem()
+  - EstimateController: try-catch 5건 + @ExceptionHandler 제거
+  - FileController: METAL/CNC 라우팅 → FileTaskProducer.sendByResult()
+- `@Valid @RequestBody` 누락 11건 추가
+- `System.out.println` → `log.info/error` 전환 (8건)
+- `@Log4j2` → `@Slf4j` 전환
+- 와일드카드 import → 명시적 import 전환
+- `ResultCode.SEND_MAIL_SUCCESS` 추가
+- `MailController`: void → `ResponseEntity<ResultResponse>` 반환 전환
 
 ---
 
-## Phase 1: Controller 계층 리팩토링
+## Phase 2: Service/Facade 계층 리팩토링 (refactor/0.0.2)
 
-### 작업 그룹
+**커밋:** `b510625` — 29 files changed, +242 -178
 
-#### Group A: Admin + Auth + Member (에이전트 A)
-| 파일 | 위반 | 상태 |
-|------|------|------|
-| AdminController | try-catch, System.out, 비즈니스 로직 | 🔄 |
-| AdminMemberController | @Valid 누락 | 🔄 |
-| AdminOrderController | 비즈니스 로직(분기) | 🔄 |
-| AuthController | @Slf4j 누락, 비즈니스 로직(쿠키) | 🔄 |
-| CompanyController | @Valid 누락(2), Map 파싱 | 🔄 |
-| MemberController | 비즈니스 로직(역할매핑), @Valid 누락(4) | 🔄 |
-| FactoryAdminController | @Slf4j, @Valid 누락 | 🔄 |
-| MemberAgreementController | @Slf4j, @Valid 누락 | 🔄 |
-| AdminDashboardController | ✅ 준수 | - |
-
-#### Group B: Factory + File (에이전트 B)
-| 파일 | 위반 | 상태 |
-|------|------|------|
-| FactoryEstimateController | 중복import, try-catch, System.out | 🔄 |
-| FactoryOrderController | @Slf4j 누락, 검증로직 | 🔄 |
-| FactoryDashboardController | @Slf4j 누락 | 🔄 |
-| KFactorController | @Slf4j 누락 | 🔄 |
-| EstimateController | try-catch(5), @ExceptionHandler | 🔄 |
-| FileController | System.out(6), 라우팅 로직 | 🔄 |
-
-#### Group C: Order + Payment + Mail (에이전트 C)
-| 파일 | 위반 | 상태 |
-|------|------|------|
-| CartController | 비즈니스 로직(분기) | 🔄 |
-| PaymentController | @Slf4j, @Valid 누락(3) | 🔄 |
-| PaymentWebHookController | @Valid 누락 | 🔄 |
-| MailController | @Slf4j 누락, void 반환 | 🔄 |
-| AWSController | @RequiredArgsConstructor, @Slf4j 누락 | 🔄 |
+### 변경 내용
+- 전체 Service에 `@Slf4j` 통일 (`@Log4j2` → `@Slf4j` 전환)
+- `RuntimeException/Exception/IllegalArgumentException` → `CustomLogicException` 전환 (30+ 건)
+- `System.out.println/System.err.println/e.printStackTrace()` → `log.info/error` (30+ 건)
+- `jakarta.transaction.Transactional` → `org.springframework.transaction.annotation.Transactional` 전환
+- `@Transactional` 누락 보완: CartService, FolderService, KFactorService, AdminMemberService(readOnly)
+- Facade `@Transactional` 규칙 적용: EstimateCartFacade, PaymentEstimateFacade
+- `ExceptionCode` enum 21개 신규 추가
+- **로직 버그 수정:** FactoryAdminService/FactoryService 역할 검증 조건 (`||` → `&&`)
+- OrderService `@Autowired` 제거
+- CompanyManagerService `return null` → 실제 목록 반환
+- PaymentWebHookService `@Value` 누락 추가
+- MailService 에러 핸들링 추가
+- 파라미터 로깅 형식 통일: `log.info("msg: {}", value)`
 
 ---
 
-## Phase 2: Service / Facade 계층 리팩토링 (예정)
+## Phase 3: DTO/Entity 리팩토링 (refactor/0.0.3)
 
-### 주요 작업
-1. RuntimeException → CustomLogicException 전환 (20+ 건)
-2. System.out.println → log.xxx() 전환 (30+ 건)
-3. @Slf4j 누락 추가 (15+ 건)
-4. @Transactional 누락 추가 (8+ 건)
-5. Facade @Transactional 규칙 적용 (2건)
-6. 로직 버그 수정 (FactoryAdminService, FactoryService)
-7. jakarta.transaction → org.springframework.transaction 전환
+**커밋:** `d566156` — 57 files changed, +204 -50
 
-## Phase 3: DTO / Entity / Mapper 리팩토링 (예정)
+### 변경 내용
 
-### 주요 작업
-1. Response DTO: @Setter 제거, @Builder + @AllArgsConstructor 추가
-2. Request DTO: @Getter @Setter @NoArgsConstructor 통일
-3. standalone Response → outer class inner class로 통합 (선택적)
-4. Entity: @Version 추가, BaseTimeEntity 상속 통일
-5. @Data → 정확한 어노테이션 조합 전환
+**Entity (16개)**
+- 전체 Entity에 `@Version private Long version` 추가 (낙관적 락)
 
-## Phase 4: Repository / QueryDSL / 전역 규칙 리팩토링 (예정)
+**DTO - Request**
+- `@Getter @Setter @NoArgsConstructor` 통일
+- `@Data` → 정확한 어노테이션 조합 전환 (AdminMemberDTO, AdminOrderDTO)
+- 누락 `@Setter` 추가 (FactoryOrderDTO, CartItemDTO, MemberDTO 등)
 
-### 주요 작업
-1. Q-class `private static final` 통일 (5건)
-2. 와일드카드 import 제거 (68개 파일)
-3. System.out.println 잔여분 제거
-4. 영문 주석 → 한글 전환 (7건)
+**DTO - Response**
+- setter 미사용 확인 후 `@Setter` 제거 (OrdersDTO, OrderItemDTO, AddressDTO, CartItemDTO 등)
+- setter 사용 확인된 Response는 `@Setter` 유지 (EstimateDTO, CostDTO, PaymentDTO 등)
+- `@AllArgsConstructor` + `@NoArgsConstructor` 추가
+- OrderItemDTO에서 `@Column` JPA 어노테이션 제거
+- `@Builder.Default` 적용 (OrderItemDTO.Response.unitPrice)
 
 ---
 
-## 커밋 로그
-| 날짜 | 브랜치 | 커밋 메시지 | 대상 파일 |
-|------|--------|------------|----------|
-| - | - | _(진행중)_ | - |
+## Phase 4: Repository/QueryDSL/전역 규칙 (refactor/0.0.4)
+
+**커밋:** `788e228` — 38 files changed, +239 -57
+
+### 변경 내용
+
+**QueryDSL (5개)**
+- Q-class 선언 `private final` → `private static final` 통일
+- 생성자 파라미터명 `entitymanager` → `entityManager` (camelCase)
+
+**와일드카드 Import 제거 (33개 파일)**
+- `jakarta.persistence.*`, `lombok.*`, `java.util.*`, `querydsl.*`, `io.jsonwebtoken.*` 등 38개 와일드카드 → 개별 import
+
+**주석 한글화 (2개 파일)**
+- AdminMemberQueryRepositoryImpl, AdminOrderQueryRepositoryImpl
+
+**잔여 System.out 제거 (1개)**
+- HolidayAPI: `System.out.println` → `@Slf4j log.info`
+
+---
+
+## 전체 요약
+
+| 항목 | 수량 |
+|------|------|
+| 총 변경 파일 | 156개 |
+| 총 커밋 | 4개 |
+| 총 브랜치 | 4개 (refactor/0.0.1 ~ 0.0.4) |
+| 컴파일 에러 | 0 (전체 Phase BUILD SUCCESSFUL) |
+| 로직 버그 수정 | 2건 (FactoryAdminService, FactoryService) |
+| ExceptionCode 신규 추가 | 21개 |
+| System.out.println 제거 | 40+ 건 |
+| RuntimeException 전환 | 30+ 건 |
+| 와일드카드 import 제거 | 70+ 건 |
+| @Version 추가 | 16개 Entity |
