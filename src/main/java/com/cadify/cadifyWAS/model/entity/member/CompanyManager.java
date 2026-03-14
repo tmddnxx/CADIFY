@@ -44,8 +44,6 @@ public class CompanyManager extends BaseEntity {
                 .ifPresent(value -> this.position = position);
         Optional.ofNullable(managerName)
                 .ifPresent(value -> this.managerName = managerName);
-        Optional.ofNullable(managerName)
-                .ifPresent(value -> this.managerName = managerName);
         return this;
     }
 }

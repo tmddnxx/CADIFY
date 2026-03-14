@@ -2,7 +2,13 @@ package com.cadify.cadifyWAS.service.admin;
 
 import com.cadify.cadifyWAS.exception.CustomLogicException;
 import com.cadify.cadifyWAS.exception.ExceptionCode;
-import com.cadify.cadifyWAS.model.dto.admin.order.*;
+import com.cadify.cadifyWAS.model.dto.admin.order.AdminOrderDTO;
+import com.cadify.cadifyWAS.model.dto.admin.order.CalendarOrderCountsResponse;
+import com.cadify.cadifyWAS.model.dto.admin.order.OrderDetails;
+import com.cadify.cadifyWAS.model.dto.admin.order.OrderItemRes;
+import com.cadify.cadifyWAS.model.dto.admin.order.OrderItemResponse;
+import com.cadify.cadifyWAS.model.dto.admin.order.OrderResponse;
+import com.cadify.cadifyWAS.model.dto.admin.order.SettlementCardsResponse;
 import com.cadify.cadifyWAS.model.entity.order.OrderItem;
 import com.cadify.cadifyWAS.model.entity.order.OrderReceivedStatus;
 import com.cadify.cadifyWAS.model.entity.order.Orders;
@@ -13,7 +19,7 @@ import com.cadify.cadifyWAS.repository.admin.order.AdminOrderQueryRepository;
 import com.cadify.cadifyWAS.repository.admin.order.OrderColumn;
 import com.cadify.cadifyWAS.repository.admin.orderItem.AdminOrderItemQueryRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +28,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
+@Slf4j
 public class AdminOrderService {
 
     // 관리자용 order Repository

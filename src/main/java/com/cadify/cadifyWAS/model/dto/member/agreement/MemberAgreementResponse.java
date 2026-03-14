@@ -4,7 +4,6 @@ import com.cadify.cadifyWAS.model.entity.member.MemberAgreementType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.joda.time.format.ISODateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

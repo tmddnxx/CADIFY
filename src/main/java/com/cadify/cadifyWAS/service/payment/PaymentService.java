@@ -47,7 +47,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -75,7 +81,7 @@ public class PaymentService {
 
     @Transactional
     @RetryOnOptimisticLock
-    public OrdersDTO.SuccessResponse confirmPayment(List<EstimateDTO.EstimateValidStatus> estimateValidStatusList, PaymentDTO.Confirm confirmRequest) throws IOException, InterruptedException {
+    public OrdersDTO.SuccessResponse confirmPayment(List<EstimateDTO.EstimateValidStatus> estimateValidStatusList, PaymentDTO.Confirm confirmRequest) {
 
         estimateStatusVerify(estimateValidStatusList);
 
@@ -83,7 +89,12 @@ public class PaymentService {
 
         String confirmResponse = requestConfirm(confirmRequest);
 
-        JsonNode root = objectMapper.readTree(confirmResponse);
+        JsonNode root;
+        try {
+            root = objectMapper.readTree(confirmResponse);
+        } catch (IOException e) {
+            throw new CustomLogicException(ExceptionCode.PAYMENT_FAILED, e.getMessage());
+        }
         String resultCode = root.path("resultCode").asText();
 
         if(!Objects.equals(resultCode, "0000")){
@@ -100,7 +111,7 @@ public class PaymentService {
         return getSuccessResponse(confirmRequest.getOrderId(), payment);
     }
 
-    private static void estimateStatusVerify(List<EstimateDTO.EstimateValidStatus> estimateValidStatusList) throws JsonProcessingException {
+    private static void estimateStatusVerify(List<EstimateDTO.EstimateValidStatus> estimateValidStatusList) {
         List<EstimateDTO.EstimateValidStatus> invalidEstimates = new ArrayList<>();
 
         for (EstimateDTO.EstimateValidStatus estimateValidStatus : estimateValidStatusList) {
@@ -111,7 +122,12 @@ public class PaymentService {
 
         if (!invalidEstimates.isEmpty()) {
             ObjectMapper objectMapper = new ObjectMapper();
-            String jsonMessage = objectMapper.writeValueAsString(invalidEstimates);
+            String jsonMessage;
+            try {
+                jsonMessage = objectMapper.writeValueAsString(invalidEstimates);
+            } catch (JsonProcessingException e) {
+                throw new CustomLogicException(ExceptionCode.INVALID_ESTIMATE_STATUS, e.getMessage());
+            }
 
             throw new CustomLogicException(
                     ExceptionCode.INVALID_ESTIMATE_STATUS,
@@ -213,7 +229,7 @@ public class PaymentService {
      */
     @Transactional
     @RetryOnOptimisticLock
-    public void cancelPaymentByUser(String tid, PaymentDTO.CancelRequest cancelRequest) throws IOException, InterruptedException {
+    public void cancelPaymentByUser(String tid, PaymentDTO.CancelRequest cancelRequest) {
         // API URL 생성
         Payment nicePayment = paymentRepository.findByTid(tid)
                 .orElseThrow(() -> new CustomLogicException(ExceptionCode.PAYMENT_NOT_FOUND));
@@ -221,7 +237,12 @@ public class PaymentService {
 
         String cancelResponse = requestCancel(tid, orderKey, cancelRequest);
 
-        JsonNode root = objectMapper.readTree(cancelResponse);
+        JsonNode root;
+        try {
+            root = objectMapper.readTree(cancelResponse);
+        } catch (IOException e) {
+            throw new CustomLogicException(ExceptionCode.PAYMENT_CANCEL_FAILED, e.getMessage());
+        }
         String resultCode = root.path("resultCode").asText();
         String resultMsg = root.path("resultMsg").asText();
         log.info("resultMsg = {}", resultMsg);

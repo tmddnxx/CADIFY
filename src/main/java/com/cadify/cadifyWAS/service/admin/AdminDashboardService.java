@@ -1,12 +1,18 @@
 package com.cadify.cadifyWAS.service.admin;
 
-import com.cadify.cadifyWAS.model.dto.admin.dashboard.*;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.MemberCardResponse;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.MonthlyRevenueResponse;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.OrderCardResponse;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.PreferredProcessingTypeResponse;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.RevenueCardResponse;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.RevenueCardTemp;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.TopRevenueMemberResponse;
 import com.cadify.cadifyWAS.repository.admin.member.AdminMemberQueryRepository;
 import com.cadify.cadifyWAS.repository.admin.order.AdminOrderQueryRepository;
 import com.cadify.cadifyWAS.repository.admin.orderItem.AdminOrderItemQueryRepository;
 import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +29,7 @@ import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
+@Slf4j
 public class AdminDashboardService {
 
     private final AdminMemberQueryRepository adminMemberRepository;

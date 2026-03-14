@@ -1,9 +1,14 @@
 package com.cadify.cadifyWAS.controller.admin;
 
-import com.cadify.cadifyWAS.model.dto.admin.dashboard.*;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.MemberCardResponse;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.MonthlyRevenueResponse;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.OrderCardResponse;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.PreferredProcessingTypeResponse;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.RevenueCardResponse;
+import com.cadify.cadifyWAS.model.dto.admin.dashboard.TopRevenueMemberResponse;
 import com.cadify.cadifyWAS.service.admin.AdminDashboardService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +20,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin/dashboard")
-@Log4j2
+@Slf4j
 public class AdminDashboardController {
 
     private final AdminDashboardService adminDashboardService;

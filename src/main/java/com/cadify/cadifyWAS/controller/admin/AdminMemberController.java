@@ -30,7 +30,7 @@ public class AdminMemberController {
     @GetMapping("/filters")
     public ResponseEntity<List<FilteredMemberResponse>> getMemberInfoByName(@ModelAttribute AdminMemberDTO.FilteredMemberRequest request){
 
-        log.info(request.getSearch() + request.getCompanyName() + request.getJoined());
+        log.info("{}{}{}", request.getSearch(), request.getCompanyName(), request.getJoined());
 
         List<FilteredMemberResponse> response = adminMemberService.getFilteredMembers(request);
 

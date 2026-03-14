@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-
 @RestController
 @RequestMapping("/api/webhook")
 @RequiredArgsConstructor
@@ -24,7 +22,7 @@ public class PaymentWebHookController {
     private final PaymentWebHookService paymentWebHookService;
 
     @PostMapping()
-    public ResponseEntity<String> receiveWebHook(@Valid @RequestBody NicePaymentWebHookDTO.Request webHookRequest) throws IOException, InterruptedException {
+    public ResponseEntity<String> receiveWebHook(@Valid @RequestBody NicePaymentWebHookDTO.Request webHookRequest) {
         log.info("웹훅 API 들어옴");
         paymentWebHookService.receiveWebHook(webHookRequest);
 

@@ -42,7 +42,7 @@ public class AuthController {
 
     // refresh 토큰 검증 및 access 토큰 발급
     @PostMapping("/refresh")
-    public ResponseEntity<?> accessTokenRequest(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Void> accessTokenRequest(HttpServletRequest request, HttpServletResponse response) {
         // 쿠키에서 refreshToken 추출 (없으면 서비스에서 예외 발생)
         String refreshToken = authService.extractRefreshToken(request);
         // 새 Access Token 발급

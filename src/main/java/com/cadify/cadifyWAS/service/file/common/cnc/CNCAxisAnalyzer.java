@@ -1,14 +1,18 @@
 package com.cadify.cadifyWAS.service.file.common.cnc;
 
+import com.cadify.cadifyWAS.exception.CustomLogicException;
+import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class CNCAxisAnalyzer {
 
@@ -188,10 +192,13 @@ public class CNCAxisAnalyzer {
                 }
             }
 
-            throw new RuntimeException("분석할 가공 데이터가 없습니다.");
+            throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, "분석할 가공 데이터가 없습니다.");
 
+        } catch (CustomLogicException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("JSON 데이터 분석 오류: " + e.getMessage(), e);
+            log.error("JSON 데이터 분석 오류: {}", e.getMessage(), e);
+            throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, "JSON 데이터 분석 오류: " + e.getMessage());
         }
     }
 

@@ -39,8 +39,8 @@ public class MemberController {
 
         MemberDTO.MemberInfo response = result.getMemberInfo();
 
-        log.info("After assign/role : new Token : " + result.getNewAccessToken());
-        log.info("After assign/role : new Role : " + response.getRole());
+        log.info("After assign/role : new Token : {}", result.getNewAccessToken());
+        log.info("After assign/role : new Role : {}", response.getRole());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + result.getNewAccessToken())

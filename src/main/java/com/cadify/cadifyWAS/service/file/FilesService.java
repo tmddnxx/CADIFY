@@ -1,6 +1,7 @@
 package com.cadify.cadifyWAS.service.file;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.cadify.cadifyWAS.config.SseEmitters;
 import com.cadify.cadifyWAS.exception.CustomLogicException;
 import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.cadify.cadifyWAS.model.dto.files.EstimateDTO;
@@ -8,6 +9,11 @@ import com.cadify.cadifyWAS.model.dto.files.FileTask;
 import com.cadify.cadifyWAS.model.dto.files.FilesDTO;
 import com.cadify.cadifyWAS.model.dto.files.GarbageFilesDTO;
 import com.cadify.cadifyWAS.model.dto.files.OptionDTO;
+import com.cadify.cadifyWAS.service.file.enumValues.common.CommonDiff;
+import com.cadify.cadifyWAS.service.file.enumValues.common.Material;
+import com.cadify.cadifyWAS.service.file.enumValues.common.Roughness;
+import com.cadify.cadifyWAS.service.file.enumValues.common.Surface;
+import com.cadify.cadifyWAS.service.file.enumValues.metal.limitValue.material.MetalMaterialByThickness;
 import com.cadify.cadifyWAS.model.entity.Files.Estimate;
 import com.cadify.cadifyWAS.repository.Files.EstimateRepository;
 import com.cadify.cadifyWAS.repository.Files.FolderRepository;
@@ -44,6 +50,8 @@ import software.amazon.awssdk.services.ecs.model.RunTaskRequest;
 import software.amazon.awssdk.services.ecs.model.RunTaskResponse;
 import software.amazon.awssdk.services.ecs.model.TaskOverride;
 
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -64,6 +72,7 @@ import java.util.stream.Collectors;
 public class FilesService {
 
     private final AmazonS3 amazonS3;
+    private final SseEmitters sseEmitters;
     private final EstimateRepository estimateRepository;
     private final FolderRepository folderRepository;
     @Value("${aws.s3.bucket.name}")
@@ -80,6 +89,45 @@ public class FilesService {
             .region(software.amazon.awssdk.regions.Region.AP_NORTHEAST_2)
             .build();
     private final long FILE_SIZE_LIMIT = 5L * 1024 * 1024 * 1024; // 5GB
+
+    public List<OptionDTO> getMaterialOptions() {
+        List<OptionDTO> optionList = new ArrayList<>();
+        optionList.add(OptionDTO.builder()
+                .key("material")
+                .options(Material.getMaterialList())
+                .build());
+        optionList.add(OptionDTO.builder()
+                .key("surface")
+                .options(Surface.getSurfaceList())
+                .build());
+        optionList.add(OptionDTO.builder()
+                .key("commonDiff")
+                .options(CommonDiff.getCommonDiffList())
+                .build());
+        optionList.add(OptionDTO.builder()
+                .key("roughness")
+                .options(Roughness.getRoughnessList())
+                .build());
+        optionList.add(OptionDTO.builder()
+                .key("metalMaterialByThickness")
+                .options(MetalMaterialByThickness.getAllThicknessListByMaterial())
+                .build());
+        return optionList;
+    }
+
+    public SseEmitter connectSse() {
+        String clientId = jwtUtil.getAuthPrincipal();
+        SseEmitter emitter = new SseEmitter(0L);
+        sseEmitters.add(clientId, emitter);
+        List<com.fasterxml.jackson.databind.JsonNode> tempKeys = filesTaskService.getTempKeys(clientId);
+        try {
+            emitter.send(SseEmitter.event().name("connect").data(tempKeys));
+        } catch (IOException e) {
+            emitter.completeWithError(e);
+        }
+        sseEmitters.startHeartbeat(emitter);
+        return emitter;
+    }
 
     // 업로드 요청 보내기 (mq로)
     @Transactional

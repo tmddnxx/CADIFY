@@ -7,7 +7,7 @@ import com.cadify.cadifyWAS.model.dto.files.OptionDTO;
 import com.cadify.cadifyWAS.model.entity.Files.KFactor;
 import com.cadify.cadifyWAS.repository.factory.estimate.KFactorRepository;
 import com.cadify.cadifyWAS.service.file.enumValues.metal.limitValue.material.MetalMaterialByThickness;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
+@Slf4j
 public class KFactorService {
 
     private final KFactorRepository kFactorRepository;

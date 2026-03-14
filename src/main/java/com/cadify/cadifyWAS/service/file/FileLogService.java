@@ -4,8 +4,11 @@ import com.cadify.cadifyWAS.model.dto.files.FileTask;
 import com.cadify.cadifyWAS.model.entity.Files.FileUploadFailedLog;
 import com.cadify.cadifyWAS.repository.Files.FailedLogRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileLogService {
@@ -13,6 +16,7 @@ public class FileLogService {
     private final FailedLogRepository failedLogRepository;
 
     // 파일 업로드 실패 로그 저장
+    @Transactional
     public void saveFileUploadFailedLog(FileTask task, String errorMessage) {
         failedLogRepository.save(
                 FileUploadFailedLog.builder()
