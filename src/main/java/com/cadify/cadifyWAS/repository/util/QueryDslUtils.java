@@ -1,7 +1,13 @@
 package com.cadify.cadifyWAS.repository.util;
 
 import com.cadify.cadifyWAS.model.entity.member.QOAuthMember;
-import com.querydsl.core.types.dsl.*;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.core.types.dsl.EnumPath;
+import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.core.types.dsl.StringPath;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;

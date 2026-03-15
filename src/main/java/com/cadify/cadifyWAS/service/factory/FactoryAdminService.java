@@ -10,13 +10,15 @@ import com.cadify.cadifyWAS.repository.factory.FactoryRepository;
 import com.cadify.cadifyWAS.repository.factory.admin.FactoryAdminRepository;
 import com.cadify.cadifyWAS.security.jwt.JwtPrincipal;
 import com.cadify.cadifyWAS.util.JwtUtil;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FactoryAdminService {
@@ -44,7 +46,7 @@ public class FactoryAdminService {
     private FactoryAdmin isValidFactoryAdmin() {
         JwtPrincipal principal = jwtUtil.getAuthPrincipalObject();
 
-        if ((principal.getRole() != MemberRole.FACTORY) || principal.getRole() != MemberRole.ADMIN) {
+        if ((principal.getRole() != MemberRole.FACTORY) && (principal.getRole() != MemberRole.ADMIN)) {
             throw new CustomLogicException(ExceptionCode.NOT_FACTORY_ADMIN);
         }
 

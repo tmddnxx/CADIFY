@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -65,7 +65,17 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.Year;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -73,7 +83,7 @@ import java.util.stream.Collectors;
 
 
 @Service
-@Log4j2
+@Slf4j
 @RequiredArgsConstructor
 public class EstimateService {
 
@@ -117,7 +127,7 @@ public class EstimateService {
                 try {
                     response = estimateMapper.estimateToEstimateResponse(estimateEntity);
                 } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
+                    throw new CustomLogicException(ExceptionCode.ESTIMATE_ERROR_JSON, e.getMessage());
                 }
                 response.setImageUrl(imageUrl);
 
@@ -131,7 +141,7 @@ public class EstimateService {
                     .build();
         } catch (Exception e) {
             // 기타 예외 처리
-            throw new RuntimeException("견적 리스트를 불러오는 중 문제가 발생했습니다.", e);
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_LIST_ERROR, e.getMessage());
         }
     }
 
@@ -144,7 +154,7 @@ public class EstimateService {
 
             // 데이터가 없는 경우
             if (joinData == null || joinData.isEmpty()) {
-                throw new IllegalArgumentException("견적 데이터를 찾을 수 없습니다.");
+                throw new CustomLogicException(ExceptionCode.ESTIMATE_NOT_FOUND);
             }
 
             Tuple tuple = joinData.get(0);
@@ -152,7 +162,7 @@ public class EstimateService {
             // Tuple 데이터 가져오기
             Estimate estimate = tuple.get(0, Estimate.class);  // 첫 번째 컬럼
             String s3Step = tuple.get(1, String.class);
-            Files files = filesRepository.findById(estimate.getFileId()).orElseThrow(() -> new Exception("파일 정보를 찾을 수 없습니다."));
+            Files files = filesRepository.findById(estimate.getFileId()).orElseThrow(() -> new CustomLogicException(ExceptionCode.FILES_NOT_FOUNT));
             String dxfAddress = files.getS3DxfAddress(); // 멤버키/metal/dxf/파일이름
             String dxfName = FileCommon.extractDxfFileName(dxfAddress);
 
@@ -165,7 +175,7 @@ public class EstimateService {
             return response;
         } catch (Exception e) {
             // 그 외의 예외 처리
-            throw new RuntimeException("견적 데이터를 불러오는 중 오류가 발생했습니다.");
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_LOAD_ERROR, e.getMessage());
         }
     }
 
@@ -173,7 +183,7 @@ public class EstimateService {
     @Transactional
     public EstimateDTO.StatusResponse patchFileName(String estKey, String fileName) {
         if (fileName == null || fileName.trim().isEmpty()) {
-            throw new RuntimeException("파일 이름이 비어있습니다.");
+            throw new CustomLogicException(ExceptionCode.INVALID_FILE_NAME);
         }
 
         fileName = fileName.trim();
@@ -182,7 +192,7 @@ public class EstimateService {
         if (fileName.contains(".")) {
             // 확장자가 포함된 경우
             if (!fileName.toLowerCase().endsWith(".step")) {
-                throw new RuntimeException("확장자는 .step만 허용됩니다.");
+                throw new CustomLogicException(ExceptionCode.INVALID_FILE_EXTENSION);
             }
             originFileName = fileName;
         } else {
@@ -196,17 +206,17 @@ public class EstimateService {
 
         // 유효한 문자 검증
         if (!normalizedFileName.matches("^[a-zA-Z0-9가-힣ㄱ-ㅎ _.,~-]+$")) {
-            throw new RuntimeException("파일이름에 특수문자는 사용 불가합니다.");
+            throw new CustomLogicException(ExceptionCode.INVALID_FILE_SPECIAL_CHAR);
         }
 
         // 전체 파일명 길이 검증
         if (originFileName.length() > 255) {
-            throw new RuntimeException("파일 이름은 255자를 초과할 수 없습니다.");
+            throw new CustomLogicException(ExceptionCode.INVALID_FILE_NAME_LENGTH);
         }
 
         Optional<Estimate> estimate = estimateRepository.findByEstKey(estKey);
         if (estimate.isEmpty()) {
-            throw new RuntimeException("정보가 없습니다.");
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_NOT_FOUND);
         }
 
         try {
@@ -214,7 +224,7 @@ public class EstimateService {
             estimateEntity.updateFileName(originFileName);
             estimateRepository.save(estimateEntity);
         } catch (Exception e) {
-            throw new RuntimeException("서버 업데이트 에러");
+            throw new CustomLogicException(ExceptionCode.SERVER_UPDATE_ERROR);
         }
 
         return EstimateDTO.StatusResponse.builder()
@@ -231,12 +241,12 @@ public class EstimateService {
     public EstimateDTO.StatusResponse putOption(EstimateDTO.MetalOptionPut optionPut) {
 
         Estimate estimate = estimateRepository.findByEstKey(optionPut.getEstKey())
-                .orElseThrow(() -> new RuntimeException(String.valueOf(ExceptionCode.ESTIMATE_NOT_FOUND)));
+                .orElseThrow(() -> new CustomLogicException(ExceptionCode.ESTIMATE_NOT_FOUND));
 
         String metaJson = estimateRepository.findMetaJsonByEstkey(optionPut.getEstKey());
 
         if(estimate.getErrorCode() != null){
-            throw new RuntimeException("설계 오류가 있는 모델링은 견적을 확인할 수 없습니다.");
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_DESIGN_ERROR);
         }
 
         String existErrorJson = estimate.getErrorJson();
@@ -255,11 +265,11 @@ public class EstimateService {
             }
 
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("오류 JSON 파싱 중 오류 발생: " + e.getMessage());
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_ERROR_JSON, e.getMessage());
         }
 
         if (!isRequestable) {
-            throw new RuntimeException("설계 오류가 있는 모델링은 견적을 확인할 수 없습니다.");
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_DESIGN_ERROR);
         }
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -267,7 +277,7 @@ public class EstimateService {
         try {
             root = objectMapper.readTree(metaJson);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("메타데이터 JSON 파싱 중 오류 발생: " + e.getMessage());
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_ERROR_JSON, e.getMessage());
         }
 
         JsonNode partsArray = root.get("parts");
@@ -276,10 +286,10 @@ public class EstimateService {
         String material = optionPut.getMaterial(); // 재질
         String surface = optionPut.getSurface(); // 표면처리
 
-        /* -------------------------------- 한계치 에러 내용 찾기 --------------------------------------------------*/ 
+        /* -------------------------------- 한계치 에러 내용 찾기 --------------------------------------------------*/
         // 두께별 가능 재질 판단 (안돼면 throw error)
         if(!MetalMaterialByThickness.getMaterialByThickness(material, thickness)){
-            throw new RuntimeException("선택하신 재질 '" + material + "'은(는) " + thickness + "mm 두께에서 사용할 수 없습니다.");
+            throw new CustomLogicException(ExceptionCode.INVALID_MATERIAL_THICKNESS);
         }
 
         // 납기일 확인
@@ -300,7 +310,7 @@ public class EstimateService {
                 isTapSuccess = MetalLimit.checkTapSizeByMaterialAndThickness(optionHoleJson, thickness, material, errorDetailList);
             }
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("홀 크기 체크 중 오류 발생: " + e.getMessage());
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_ERROR_JSON, e.getMessage());
         }
 
         String originMaterial = material;
@@ -318,7 +328,7 @@ public class EstimateService {
             log.info("도장 도금 홀 검사 필요");
             String msg = MetalLimit.findLiftHole(partsArray, majorMaterial);
             if(msg != null){
-                throw new RuntimeException(msg);
+                throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, msg);
             }
         }
 
@@ -357,7 +367,7 @@ public class EstimateService {
             price = setPrice(estimate, optionPut.isFastShipment(), totalCost); // 가격 저장
             estimateRepository.save(estimate);
         }catch (Exception e){
-            throw new RuntimeException("서버 업데이트 에러");
+            throw new CustomLogicException(ExceptionCode.SERVER_UPDATE_ERROR);
         }
 
         return EstimateDTO.StatusResponse.builder()
@@ -373,12 +383,12 @@ public class EstimateService {
     public EstimateDTO.StatusResponse putCncOption(EstimateDTO.CnCOptionPut optionPut) {
 
         Estimate estimate = estimateRepository.findByEstKey(optionPut.getEstKey())
-                .orElseThrow(() -> new RuntimeException(String.valueOf(ExceptionCode.ESTIMATE_NOT_FOUND)));
+                .orElseThrow(() -> new CustomLogicException(ExceptionCode.ESTIMATE_NOT_FOUND));
 
         String metaJson = estimateRepository.findMetaJsonByEstkey(optionPut.getEstKey());
 
         if(estimate.getErrorCode() != null){
-            throw new RuntimeException("설계 오류가 있는 모델링은 견적을 확인할 수 없습니다.");
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_DESIGN_ERROR);
         }
 
         String existErrorJson = estimate.getErrorJson();
@@ -395,20 +405,20 @@ public class EstimateService {
                     }
                 }
             } catch (JsonProcessingException e) {
-                throw new RuntimeException("오류 JSON 파싱 중 오류 발생: " + e.getMessage());
+                throw new CustomLogicException(ExceptionCode.ESTIMATE_ERROR_JSON, e.getMessage());
             }
         }
 
         if (!isRequestable) {
-            throw new RuntimeException("설계 오류가 있는 모델링은 견적을 확인할 수 없습니다.");
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_DESIGN_ERROR);
         }
 
         // 공차 옵션 or 표면거칠기 옵션 선택 시 dxf 필수 체크
         if (optionPut.getCommonDiff().equals(CommonDiff.D2.getValue()) || optionPut.getRoughness().equals(Roughness.R1.getValue())) {
             Files files = filesRepository.findById(estimate.getFileId())
-                    .orElseThrow(() -> new RuntimeException("파일 정보를 찾을 수 없습니다."));
+                    .orElseThrow(() -> new CustomLogicException(ExceptionCode.FILES_NOT_FOUNT));
             if (files.getS3DxfAddress() == null) {
-                throw new RuntimeException("해당 공차옵션과 표면거칠기 옵션은 dxf 파일이 필수입니다. \ndxf 파일을 업로드해주세요.");
+                throw new CustomLogicException(ExceptionCode.DXF_REQUIRED);
             }
         }
 
@@ -437,7 +447,7 @@ public class EstimateService {
         try {
             root = objectMapper.readTree(metaJson);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("메타데이터 JSON 파싱 중 오류 발생: " + e.getMessage());
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_ERROR_JSON, e.getMessage());
         }
         JsonNode parts = root.get("parts");
         JsonNode body = parts.get(0).get("bodies").get(0);
@@ -454,7 +464,7 @@ public class EstimateService {
             log.info("도장 도금 홀 검사 필요");
             String msg = CNCLimit.findLiftHole(parts, optionPut.getMaterial());
             if(msg != null){
-                throw new RuntimeException(msg);
+                throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, msg);
             }
         }
 
@@ -489,7 +499,7 @@ public class EstimateService {
             price = setPrice(estimate, optionPut.isFastShipment(), totalCost); // 가격 저장
             estimateRepository.save(estimate);
         }catch (Exception e){
-            throw new RuntimeException("서버 업데이트 에러");
+            throw new CustomLogicException(ExceptionCode.SERVER_UPDATE_ERROR);
         }
 
         Map<String , Object> data = new HashMap<>();
@@ -529,12 +539,12 @@ public class EstimateService {
 
     // 뷰어에서 dxf 파일 업로드
     @Transactional(rollbackFor = Exception.class)
-    public EstimateDTO.StatusResponse patchDxf(String memberKey, String estKey, MultipartFile file) throws Exception {
+    public EstimateDTO.StatusResponse patchDxf(String memberKey, String estKey, MultipartFile file) {
         try {
-            Estimate estimate = estimateRepository.findByEstKey(estKey).orElseThrow(() -> new Exception("견적 정보를 찾을 수 없습니다."));
+            Estimate estimate = estimateRepository.findByEstKey(estKey).orElseThrow(() -> new CustomLogicException(ExceptionCode.ESTIMATE_NOT_FOUND));
             Long fileKey = estimate.getFileId();
-            if(!Objects.equals(estimate.getMemberKey(), memberKey)) throw new Exception("사용자가 일치하지 않습니다.");
-            Files files = filesRepository.findById(fileKey).orElseThrow(() -> new Exception("파일 정보를 찾을 수 없습니다."));
+            if(!Objects.equals(estimate.getMemberKey(), memberKey)) throw new CustomLogicException(ExceptionCode.USER_MISMATCH);
+            Files files = filesRepository.findById(fileKey).orElseThrow(() -> new CustomLogicException(ExceptionCode.FILES_NOT_FOUNT));
             // dxf url 찾기 (memberKey /metal / dxf / 파일이름 . dxf )
             String existDxfUrl = null;
             // 판금인지 절삭인지 확인
@@ -559,12 +569,12 @@ public class EstimateService {
             String originFileName = file.getOriginalFilename();
 
             if(file.isEmpty()){
-                throw new Exception("파일을 업로드해주세요.");
+                throw new CustomLogicException(ExceptionCode.FILE_EMPTY);
             }
 
             String lowerName = originFileName.toLowerCase();
             if (!lowerName.endsWith(".dxf") && !lowerName.endsWith(".dwg")) {
-                throw new Exception("파일 확장자는 dxf 또는 dwg만 가능합니다.");
+                throw new CustomLogicException(ExceptionCode.DXF_EXTENSION_INVALID);
             }
 
             // 확장자 제거
@@ -573,7 +583,7 @@ public class EstimateService {
             String normalizedFileName = Normalizer.normalize(baseName, Normalizer.Form.NFC);
 
             if (!normalizedFileName.matches("^[a-zA-Z0-9가-힣 _.,~-]+$")) {
-                throw new Exception("파일이름에 특수문자는 사용 불가합니다.");
+                throw new CustomLogicException(ExceptionCode.INVALID_FILE_SPECIAL_CHAR);
             }
 
             String extension = "";
@@ -621,10 +631,10 @@ public class EstimateService {
                 garbageFilesDTO.setPath(s3DxfFileKey); // 실패한 파일 경로 저장
                 garbageFileService.saveGarbageFiles(garbageFilesDTO); // garbage 테이블에 저장
 
-                throw new Exception(e.getMessage());
+                throw new CustomLogicException(ExceptionCode.UPLOAD_FAILED, e.getMessage());
             }
         } catch (Exception e){ // 파일읽기에서 오류 발생
-            throw new Exception(e.getMessage());
+            throw new CustomLogicException(ExceptionCode.UPLOAD_FAILED, e.getMessage());
         }
 
         return EstimateDTO.StatusResponse.builder()

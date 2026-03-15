@@ -19,22 +19,33 @@ import com.cadify.cadifyWAS.mapper.OrderItemMapper;
 import com.cadify.cadifyWAS.mapper.OrderMapper;
 import com.cadify.cadifyWAS.model.dto.order.AddressDTO;
 import com.cadify.cadifyWAS.model.dto.order.OrdersDTO;
-import com.cadify.cadifyWAS.model.entity.*;
-import com.cadify.cadifyWAS.repository.*;
+import com.cadify.cadifyWAS.model.entity.Address;
+import com.cadify.cadifyWAS.repository.AddressRepository;
+import com.cadify.cadifyWAS.repository.CartItemRepository;
+import com.cadify.cadifyWAS.repository.CartRepository;
+import com.cadify.cadifyWAS.repository.OrderItemRepository;
+import com.cadify.cadifyWAS.repository.OrderRepository;
+import com.cadify.cadifyWAS.repository.PaymentRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.cadify.cadifyWAS.exception.ExceptionCode.*;
 
@@ -95,7 +106,7 @@ public class OrderService {
             // 회사 회원 주문 생성
             order = createByCompanyMember(orderRequest, loginMember, cart);
         } else{
-            throw new RuntimeException();
+            throw new CustomLogicException(ExceptionCode.INVALID_ROLE);
         }
 
         Orders saveOrder = orderRepository.save(order);
@@ -379,7 +390,7 @@ public class OrderService {
             }
 
         } catch (Exception e) {
-            System.err.println("배송 상태 응답 파싱 오류: " + e.getMessage());
+            log.error("배송 상태 응답 파싱 오류: {}", e.getMessage());
         }
     }
 
@@ -433,7 +444,7 @@ public class OrderService {
             }
 
         } catch (Exception e) {
-            System.err.println("배송 상태 응답 파싱 오류: " + e.getMessage());
+            log.error("배송 상태 응답 파싱 오류: {}", e.getMessage());
         }
     }
 }

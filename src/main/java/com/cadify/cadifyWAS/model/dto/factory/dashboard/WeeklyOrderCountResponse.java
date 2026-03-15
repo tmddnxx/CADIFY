@@ -1,5 +1,6 @@
 package com.cadify.cadifyWAS.model.dto.factory.dashboard;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +10,7 @@ public class WeeklyOrderCountResponse {
     private String dayOfWeek;
     private Long orderCount;
 
+    @Builder
     public WeeklyOrderCountResponse(String dayOfWeek, Long orderCount){
         this.dayOfWeek = dayOfWeek;
         this.orderCount = orderCount;

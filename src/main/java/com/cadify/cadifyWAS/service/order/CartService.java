@@ -8,6 +8,7 @@ import com.cadify.cadifyWAS.model.entity.member.OAuthMember;
 import com.cadify.cadifyWAS.model.entity.cart.Cart;
 import com.cadify.cadifyWAS.model.entity.cart.CartItem;
 import com.cadify.cadifyWAS.repository.Files.FilesRepository;
+import com.cadify.cadifyWAS.result.ResultResponse;
 import com.cadify.cadifyWAS.service.file.enumValues.common.Shipment;
 import com.cadify.cadifyWAS.util.JwtUtil;
 import com.cadify.cadifyWAS.exception.CustomLogicException;
@@ -17,18 +18,23 @@ import com.cadify.cadifyWAS.model.dto.cart.CartItemDTO;
 import com.cadify.cadifyWAS.repository.CartItemRepository;
 import com.cadify.cadifyWAS.repository.CartRepository;
 import com.cadify.cadifyWAS.repository.Files.EstimateRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.cadify.cadifyWAS.exception.ExceptionCode.*;
+import static com.cadify.cadifyWAS.result.ResultCode.ADD_CART_ITEM_DUPLICATED;
+import static com.cadify.cadifyWAS.result.ResultCode.ADD_CART_ITEM_SUCCESS;
 
 @Service
 @RequiredArgsConstructor
@@ -45,11 +51,12 @@ public class CartService {
 
     /**
      * 장바구니에 견적(상품) 담는 로직
-     * @param cartRequest
-     * List<Long> estIdList
+     * 중복된 견적이 있고 덮어쓰기를 허용하지 않으면 중복 목록 포함 응답 반환
+     * @param cartRequest 장바구니 추가 요청 DTO
+     * @return 중복 없으면 ADD_CART_ITEM_SUCCESS, 중복 있으면 ADD_CART_ITEM_DUPLICATED(중복 키 포함) 반환
      */
     @Transactional
-    public List<Long> addCartIem(CartDTO.Request cartRequest) {
+    public ResultResponse addCartIem(CartDTO.Request cartRequest) {
 
         OAuthMember loginMember = jwtUtil.getLoginMember();
 
@@ -61,7 +68,7 @@ public class CartService {
         if(!duplicateEstKeyList.isEmpty()) {
             if (!cartRequest.isOverwrite()) {
                 // 덮어쓰기 허용 안하면 중복된 아이템 리스트 반환
-                return duplicateEstKeyList;
+                return ResultResponse.of(ADD_CART_ITEM_DUPLICATED, duplicateEstKeyList);
             } else {
                 cartItemRepository.deleteAllByIdInBatch(duplicateEstKeyList);
                 cartItemRepository.flush(); // 삭제를 즉시 DB에 반영
@@ -74,7 +81,7 @@ public class CartService {
         cart.recalculate(cartItems);
 
         cartRepository.save(cart);
-        return null;
+        return ResultResponse.of(ADD_CART_ITEM_SUCCESS);
     }
 
     /**

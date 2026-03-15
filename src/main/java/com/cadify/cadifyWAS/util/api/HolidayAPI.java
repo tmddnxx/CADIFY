@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
+@Slf4j
 @Component
 public class HolidayAPI {
     @Value("${government.api.url}")
@@ -43,7 +45,7 @@ public class HolidayAPI {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-type", "application/json");
-        System.out.println("Response code: " + conn.getResponseCode());
+        log.info("Response code: {}", conn.getResponseCode());
         BufferedReader rd;
         if(conn.getResponseCode() >= 200 && conn.getResponseCode() <= 300) {
             rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -58,7 +60,7 @@ public class HolidayAPI {
         rd.close();
         conn.disconnect();
 
-        System.out.println("공휴일 가져오기 성공");
+        log.info("공휴일 가져오기 성공");
 
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode response = objectMapper.readTree(sb.toString());

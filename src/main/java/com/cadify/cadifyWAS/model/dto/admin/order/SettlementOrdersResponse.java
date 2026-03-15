@@ -1,6 +1,6 @@
 package com.cadify.cadifyWAS.model.dto.admin.order;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -22,6 +22,7 @@ public class SettlementOrdersResponse {
     private String status;
     private Long leftDays;
 
+    @Builder
     public SettlementOrdersResponse(String orderKey, String name, String company, LocalDateTime orderDate, Integer price){
         this.orderKey = orderKey;
         this.name = name;

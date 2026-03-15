@@ -1,5 +1,6 @@
 package com.cadify.cadifyWAS.model.dto.order;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,8 +33,9 @@ public class AddressDTO {
     }
 
     @Getter
-    @Setter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Response{
 
         private String addressKey;

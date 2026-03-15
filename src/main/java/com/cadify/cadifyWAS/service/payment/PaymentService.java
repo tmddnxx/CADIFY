@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.BaseFont;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +47,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -75,7 +81,7 @@ public class PaymentService {
 
     @Transactional
     @RetryOnOptimisticLock
-    public OrdersDTO.SuccessResponse confirmPayment(List<EstimateDTO.EstimateValidStatus> estimateValidStatusList, PaymentDTO.Confirm confirmRequest) throws IOException, InterruptedException {
+    public OrdersDTO.SuccessResponse confirmPayment(List<EstimateDTO.EstimateValidStatus> estimateValidStatusList, PaymentDTO.Confirm confirmRequest) {
 
         estimateStatusVerify(estimateValidStatusList);
 
@@ -83,7 +89,12 @@ public class PaymentService {
 
         String confirmResponse = requestConfirm(confirmRequest);
 
-        JsonNode root = objectMapper.readTree(confirmResponse);
+        JsonNode root;
+        try {
+            root = objectMapper.readTree(confirmResponse);
+        } catch (IOException e) {
+            throw new CustomLogicException(ExceptionCode.PAYMENT_FAILED, e.getMessage());
+        }
         String resultCode = root.path("resultCode").asText();
 
         if(!Objects.equals(resultCode, "0000")){
@@ -100,7 +111,7 @@ public class PaymentService {
         return getSuccessResponse(confirmRequest.getOrderId(), payment);
     }
 
-    private static void estimateStatusVerify(List<EstimateDTO.EstimateValidStatus> estimateValidStatusList) throws JsonProcessingException {
+    private static void estimateStatusVerify(List<EstimateDTO.EstimateValidStatus> estimateValidStatusList) {
         List<EstimateDTO.EstimateValidStatus> invalidEstimates = new ArrayList<>();
 
         for (EstimateDTO.EstimateValidStatus estimateValidStatus : estimateValidStatusList) {
@@ -111,7 +122,12 @@ public class PaymentService {
 
         if (!invalidEstimates.isEmpty()) {
             ObjectMapper objectMapper = new ObjectMapper();
-            String jsonMessage = objectMapper.writeValueAsString(invalidEstimates);
+            String jsonMessage;
+            try {
+                jsonMessage = objectMapper.writeValueAsString(invalidEstimates);
+            } catch (JsonProcessingException e) {
+                throw new CustomLogicException(ExceptionCode.INVALID_ESTIMATE_STATUS, e.getMessage());
+            }
 
             throw new CustomLogicException(
                     ExceptionCode.INVALID_ESTIMATE_STATUS,
@@ -213,7 +229,7 @@ public class PaymentService {
      */
     @Transactional
     @RetryOnOptimisticLock
-    public void cancelPaymentByUser(String tid, PaymentDTO.CancelRequest cancelRequest) throws IOException, InterruptedException {
+    public void cancelPaymentByUser(String tid, PaymentDTO.CancelRequest cancelRequest) {
         // API URL 생성
         Payment nicePayment = paymentRepository.findByTid(tid)
                 .orElseThrow(() -> new CustomLogicException(ExceptionCode.PAYMENT_NOT_FOUND));
@@ -221,7 +237,12 @@ public class PaymentService {
 
         String cancelResponse = requestCancel(tid, orderKey, cancelRequest);
 
-        JsonNode root = objectMapper.readTree(cancelResponse);
+        JsonNode root;
+        try {
+            root = objectMapper.readTree(cancelResponse);
+        } catch (IOException e) {
+            throw new CustomLogicException(ExceptionCode.PAYMENT_CANCEL_FAILED, e.getMessage());
+        }
         String resultCode = root.path("resultCode").asText();
         String resultMsg = root.path("resultMsg").asText();
         log.info("resultMsg = {}", resultMsg);
@@ -384,45 +405,5 @@ public class PaymentService {
                 .bodyToMono(PaymentDTO.Response.class)
                 .block();
     }
-
-    /**
-     * 현금 영수증 요청
-     */
-//    private HttpResponse<String> requestCashReceipt(PaymentDTO.Confirm confirmPaymentRequest) throws IOException, InterruptedException {
-//
-//        Orders orders = orderRepository.findById(confirmPaymentRequest.getOrderId())
-//                .orElseThrow(() -> new CustomLogicException(ExceptionCode.ORDER_NOT_FOUND));
-//
-//        List<OrderItem> orderItems = orderItemRepository.findAllByOrderKey(orders.getOrderKey());
-//
-//        String goodsName = orderItems.get(0).getFileName();
-//
-//
-//        String orderId = confirmPaymentRequest.getOrderId();
-//        String amount = confirmPaymentRequest.getAmount();
-//
-//
-//        ObjectNode requestObj = objectMapper.createObjectNode()
-//                .put("orderId", orderId)
-//                .put("amount", amount)
-//                .put("goodsName", goodsName) //
-//                .put("receiptType", type)
-//                .put("receiptNo", customerIdentityNumber)
-//                .put("supplyAmt") // 공급 가액
-//                .put("goodsVat") // 부가 가치 세
-//                .put("taxFreeAmt", 0) // 면세료
-//                .put("serviceAmt", 0); // 봉사료
-//
-//        String requestBody = objectMapper.writeValueAsString(requestObj);
-//
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create("https://api.tosspayments.com/v1/cash-receipt"))
-//                .header("Authorization", getAuthorizations())
-//                .header("Content-Type", "application/json")
-//                .method("POST", HttpRequest.BodyPublishers.ofString(requestBody))
-//                .build();
-//
-//        return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-//    }
 
 }

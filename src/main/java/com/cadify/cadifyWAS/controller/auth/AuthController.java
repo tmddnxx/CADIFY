@@ -1,20 +1,20 @@
 package com.cadify.cadifyWAS.controller.auth;
 
-import com.cadify.cadifyWAS.exception.CustomLogicException;
-import com.cadify.cadifyWAS.exception.ErrorResponse;
-import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.cadify.cadifyWAS.model.dto.auth.AuthDTO;
 import com.cadify.cadifyWAS.service.auth.AuthService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
@@ -24,7 +24,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestBody AuthDTO.RefreshTokenInfo request) {
-        // DB에서 Toekn 테이블 레코드 삭제
+        // DB에서 Token 테이블 레코드 삭제
         authService.logoutProcess(request);
         // http only refresh token 삭제 -> 만료시간 0 세팅
         ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
@@ -42,32 +42,13 @@ public class AuthController {
 
     // refresh 토큰 검증 및 access 토큰 발급
     @PostMapping("/refresh")
-    public ResponseEntity<?> accessTokenRequest(HttpServletRequest request, HttpServletResponse response) {
-        Cookie[] cookies = request.getCookies();
-        // 쿠키가 존재하지 않을 경우 -> 로그인 필요
-        if (cookies == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ErrorResponse.of(new CustomLogicException(ExceptionCode.REQUIRED_LOGIN)));
-        }
-        // 쿠키가 존재할 경우 -> refreshToken String 추출
-        String refreshToken = null;
-        for (Cookie cookie : cookies) {
-            if ("refreshToken".equals(cookie.getName())) {
-                refreshToken = cookie.getValue();
-                break;
-            }
-        }
-        // refresh 토큰이 null 일 경우
-        if (refreshToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ErrorResponse.of(new CustomLogicException(ExceptionCode.REQUIRED_LOGIN)));
-        }
+    public ResponseEntity<Void> accessTokenRequest(HttpServletRequest request, HttpServletResponse response) {
+        // 쿠키에서 refreshToken 추출 (없으면 서비스에서 예외 발생)
+        String refreshToken = authService.extractRefreshToken(request);
         // 새 Access Token 발급
         String newAccessToken = authService.refreshProcess(refreshToken);
-
         // 헤더에 새 토큰 추가
         response.setHeader("Authorization", "Bearer " + newAccessToken);
-
         // 본문 없이 응답, 204 반환
         return ResponseEntity.noContent().build();
     }

@@ -1,5 +1,7 @@
 package com.cadify.cadifyWAS.service.file.common.metal;
 
+import com.cadify.cadifyWAS.exception.CustomLogicException;
+import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.cadify.cadifyWAS.model.dto.files.CostDTO;
 import com.cadify.cadifyWAS.service.file.enumValues.metal.priceValue.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,7 +44,8 @@ public class MetalPrice {
         try{
             holeNodes = objectMapper.readTree(holeJson);
         }catch (JsonProcessingException e){
-            throw new RuntimeException("홀 정보가 올바르지 않습니다.");
+            log.error("홀 JSON 파싱 오류: {}", e.getMessage(), e);
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_ERROR_JSON, "홀 정보가 올바르지 않습니다.");
         }
 
         int tapCost = MetalCostByHole.getCostByHole("TAP"); // 개당 단가

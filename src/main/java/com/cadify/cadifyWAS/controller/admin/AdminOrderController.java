@@ -1,22 +1,31 @@
 package com.cadify.cadifyWAS.controller.admin;
 
-import com.cadify.cadifyWAS.model.dto.admin.order.*;
-import com.cadify.cadifyWAS.repository.admin.order.OrderColumn;
+import com.cadify.cadifyWAS.model.dto.admin.order.AdminOrderDTO;
+import com.cadify.cadifyWAS.model.dto.admin.order.CalendarOrderCountsResponse;
+import com.cadify.cadifyWAS.model.dto.admin.order.OrderItemResponse;
+import com.cadify.cadifyWAS.model.dto.admin.order.OrderResponse;
+import com.cadify.cadifyWAS.model.dto.admin.order.SettlementCardsResponse;
 import com.cadify.cadifyWAS.service.admin.AdminOrderService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin/order")
-@Log4j2
 public class AdminOrderController {
 
     private final AdminOrderService adminOrderService;
@@ -24,17 +33,7 @@ public class AdminOrderController {
     // 총 주문 : 주문 조회 ( filter )
     @GetMapping("/search")
     public ResponseEntity<List<OrderResponse>> getTotalOrders(@ModelAttribute AdminOrderDTO.OrderRequest request){
-
-        OrderColumn column;
-
-        if(request.getDateBy().equalsIgnoreCase(OrderColumn.SHIPMENT.toString())){
-            column = OrderColumn.SHIPMENT;
-        }else{
-            column = OrderColumn.CREATED;
-        }
-
-        List<OrderResponse> response = adminOrderService.getOrders(request, column);
-
+        List<OrderResponse> response = adminOrderService.getOrders(request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -78,17 +77,17 @@ public class AdminOrderController {
 
     // order item status update
     @PatchMapping("/item/status")
-    public ResponseEntity<Map<String, String>> updateOrderItemStatus(@RequestBody AdminOrderDTO.StatusUpdateRequests request){
+    public ResponseEntity<AdminOrderDTO.StatusResponse> updateOrderItemStatus(@RequestBody AdminOrderDTO.StatusUpdateRequests request){
         String response = adminOrderService.decideProcessable(request);
 
-        return new ResponseEntity<>(Map.of("status", response), HttpStatus.OK);
+        return new ResponseEntity<>(new AdminOrderDTO.StatusResponse(response), HttpStatus.OK);
     }
 
-    // order status update
+    // 주문 상태 업데이트
     @PatchMapping("/status")
-    public ResponseEntity<Map<String, String>> updateOrderStatus(@RequestBody AdminOrderDTO.StatusUpdateRequests request){
+    public ResponseEntity<AdminOrderDTO.StatusResponse> updateOrderStatus(@RequestBody AdminOrderDTO.StatusUpdateRequests request){
         String response = adminOrderService.processDeliveryAndSettlement(request);
 
-        return new ResponseEntity<>(Map.of("status", response), HttpStatus.OK);
+        return new ResponseEntity<>(new AdminOrderDTO.StatusResponse(response), HttpStatus.OK);
     }
 }

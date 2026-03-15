@@ -1,13 +1,18 @@
 package com.cadify.cadifyWAS.model.entity.cart;
 
 import com.cadify.cadifyWAS.util.base.BaseTimeEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Version;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -17,6 +22,9 @@ public class Cart extends BaseTimeEntity {
     @Id
     @GeneratedValue
     private Long cartKey;
+
+    @Version
+    private Long version;
 
     private String memberKey;
 

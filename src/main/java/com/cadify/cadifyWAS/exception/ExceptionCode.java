@@ -153,7 +153,31 @@ public enum ExceptionCode {
 
     // JPA
     INVALID_COLUMN(401, "지원되지 않는 칼럼."),
-    INVALID_VALUE(401, "허용되지 않은 값");
+    INVALID_VALUE(401, "허용되지 않은 값"),
+
+    // File Upload
+    FILE_UPLOAD_LIMIT_EXCEEDED(400, "파일은 한번에 최대 20개까지 업로드 가능합니다"),
+    FILE_SIZE_EXCEEDED(400, "업로드 용량 초과입니다"),
+    FILE_PROCESSING_LIMIT_EXCEEDED(400, "파일은 최대 50개까지 처리 가능합니다. 잠시 후 다시 시도해주세요"),
+    INVALID_FILE(400, "이용 불가능한 파일입니다. 고객센터에 문의해주세요"),
+    INVALID_FILE_TYPE(400, "가공 불가능한 타입입니다"),
+    UNKNOWN_FILE_ERROR(500, "파일에 알 수 없는 문제가 있습니다. 정상적인 솔리드 모델을 업로드 해 주세요"),
+    KFACTOR_NOT_APPLICABLE(400, "절삭은 K팩터를 적용할 수 없습니다"),
+    FOLDER_DELETE_FAILED(500, "폴더 삭제 실패"),
+    TEMPORARY_ERROR(500, "잠시 후 다시 시도해주세요"),
+    SERVER_UPDATE_ERROR(500, "서버 업데이트 에러"),
+    ESTIMATE_LIST_ERROR(500, "견적 리스트를 불러오는 중 문제가 발생했습니다"),
+    ESTIMATE_LOAD_ERROR(500, "견적 데이터를 불러오는 중 오류가 발생했습니다"),
+    ESTIMATE_DESIGN_ERROR(400, "설계 오류가 있는 모델링은 견적을 확인할 수 없습니다"),
+    INVALID_FILE_NAME(400, "파일 이름이 비어있습니다"),
+    INVALID_FILE_EXTENSION(400, "확장자는 .step만 허용됩니다"),
+    INVALID_FILE_SPECIAL_CHAR(400, "파일이름에 특수문자는 사용 불가합니다"),
+    INVALID_FILE_NAME_LENGTH(400, "파일 이름은 255자를 초과할 수 없습니다"),
+    INVALID_MATERIAL_THICKNESS(400, "선택하신 재질은 해당 두께에서 사용할 수 없습니다"),
+    DXF_REQUIRED(400, "해당 공차옵션과 표면거칠기 옵션은 dxf 파일이 필수입니다. dxf 파일을 업로드해주세요"),
+    DXF_EXTENSION_INVALID(400, "파일 확장자는 dxf 또는 dwg만 가능합니다"),
+    FILE_EMPTY(400, "파일을 업로드해주세요"),
+    USER_MISMATCH(403, "사용자가 일치하지 않습니다");
 
     private final int status;
     private final String message;

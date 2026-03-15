@@ -12,7 +12,7 @@ import com.cadify.cadifyWAS.result.ResultCode;
 import com.cadify.cadifyWAS.result.ResultResponse;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
+@Slf4j
 public class FolderService {
 
     private final FolderRepository folderRepository;
@@ -33,6 +33,7 @@ public class FolderService {
     private final EstimateRepository estimateRepository;
 
      // 폴더 생성
+    @Transactional
     public ResultResponse createFolder(FolderDTO.Post post){
 
         // 폴더 이름검증
@@ -72,6 +73,7 @@ public class FolderService {
     }
 
     // 폴더 이름 수정
+    @Transactional
     public ResultResponse modifyFolderName(String folderKey, String folderName){
 
         // 폴더이름 검증
@@ -111,13 +113,14 @@ public class FolderService {
             folderRepository.delete(folder);
         } catch (Exception e) {
 
-            throw new CustomLogicException(ExceptionCode.valueOf("폴더 삭제 실패"));
+            throw new CustomLogicException(ExceptionCode.FOLDER_DELETE_FAILED);
         }
 
         return ResultResponse.of(ResultCode.SUCCESS, deletedCnt);
     }
 
     // 폴더 이동 (해당 폴더의 parentKey 변경)
+    @Transactional
     public ResultResponse moveFolder(FolderDTO.Move move) {
         Folder folder = folderRepository.findByFolderKey(move.getFolderKey())
                 .orElseThrow(() -> new CustomLogicException(ExceptionCode.FOLDER_NOT_FOUND));

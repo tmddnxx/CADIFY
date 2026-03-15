@@ -13,7 +13,7 @@ import java.util.List;
 public class CompanyManagerQueryRepositoryImpl implements CompanyManagerQueryRepository {
 
     private final JPAQueryFactory queryFactory;
-    private final QCompanyManager manager = QCompanyManager.companyManager;
+    private static final QCompanyManager manager = QCompanyManager.companyManager;
 
     public CompanyManagerQueryRepositoryImpl(EntityManager em){
         this.queryFactory = new JPAQueryFactory(em);

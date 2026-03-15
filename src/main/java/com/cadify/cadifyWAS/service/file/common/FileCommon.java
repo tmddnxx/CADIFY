@@ -1,5 +1,7 @@
 package com.cadify.cadifyWAS.service.file.common;
 
+import com.cadify.cadifyWAS.exception.CustomLogicException;
+import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.cadify.cadifyWAS.model.entity.Files.Estimate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -37,7 +39,8 @@ public class FileCommon {
 
             return objectMapper.writeValueAsString(distinctList);
         } catch (Exception e) {
-            throw new RuntimeException("Error converting ErrorDetail list to string", e);
+            log.error("Error converting ErrorDetail list to string: {}", e.getMessage(), e);
+            throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, "Error converting ErrorDetail list to string");
         }
     }
 
@@ -48,8 +51,8 @@ public class FileCommon {
         try {
             return objectMapper.readValue(input, new TypeReference<List<Integer>>() {});
         } catch (JsonProcessingException e) {
-            log.error("Error converting string to number list: {}", e.getMessage());
-            throw new RuntimeException("Error converting string to number list", e);
+            log.error("Error converting string to number list: {}", e.getMessage(), e);
+            throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, "Error converting string to number list");
         }
     }
 
@@ -60,8 +63,8 @@ public class FileCommon {
         try {
             return objectMapper.readValue(input, new TypeReference<List<Estimate.ErrorDetail>>() {});
         } catch (JsonProcessingException e) {
-            log.error("Error converting string to list: {}", e.getMessage());
-            throw new RuntimeException("Error converting string to list", e);
+            log.error("Error converting string to list: {}", e.getMessage(), e);
+            throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, "Error converting string to list");
         }
     }
 
@@ -76,11 +79,11 @@ public class FileCommon {
     // 파일 검증 (파일명, 확장자, 특수문자 등)
     public static void validateFile(String originFileName, MultipartFile file){
         if (file.isEmpty()) {
-            throw new RuntimeException("파일을 업로드해주세요.");
+            throw new CustomLogicException(ExceptionCode.FILE_EMPTY);
         }
 
         if (!originFileName.toLowerCase().endsWith(".step")) {
-            throw new RuntimeException(".step 형식의 확장자만 업로드 가능합니다.");
+            throw new CustomLogicException(ExceptionCode.INVALID_FILE_EXTENSION);
         }
 
         String normalizedFileName = Normalizer.normalize(
@@ -89,7 +92,7 @@ public class FileCommon {
         );
 
         if (!normalizedFileName.matches("^[a-zA-Z0-9ㄱ-ㅎ가-힣 _,-]+$")) {
-            throw new RuntimeException("파일이름에 특수문자는 사용 불가합니다.");
+            throw new CustomLogicException(ExceptionCode.INVALID_FILE_SPECIAL_CHAR);
         }
     }
 

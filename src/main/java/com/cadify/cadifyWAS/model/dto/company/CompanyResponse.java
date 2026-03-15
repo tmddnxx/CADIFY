@@ -10,6 +10,7 @@ public class CompanyResponse {
     private String companyName;
     private String companyEmail;
 
+    @Builder
     public CompanyResponse(String companyName, String companyEmail){
         this.companyName = companyName;
         this.companyEmail = companyEmail;

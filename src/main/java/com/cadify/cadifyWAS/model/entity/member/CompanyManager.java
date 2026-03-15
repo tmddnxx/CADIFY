@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Version;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,9 @@ public class CompanyManager extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String managerKey;
+
+    @Version
+    private Long version;
     private String memberKey;
     private String department;
     private String position;
@@ -38,8 +42,6 @@ public class CompanyManager extends BaseEntity {
                 .ifPresent(value -> this.department = department);
         Optional.ofNullable(position)
                 .ifPresent(value -> this.position = position);
-        Optional.ofNullable(managerName)
-                .ifPresent(value -> this.managerName = managerName);
         Optional.ofNullable(managerName)
                 .ifPresent(value -> this.managerName = managerName);
         return this;

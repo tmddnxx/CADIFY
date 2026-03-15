@@ -6,6 +6,7 @@ import com.cadify.cadifyWAS.service.order.CartService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,12 +17,14 @@ public class EstimateCartFacade {
     private final EstimateService estimateService;
 
     // 견적 수정 시 카트에 담긴 아이템 삭제
+    @Transactional
     public EstimateDTO.StatusResponse deleteCartItemAtEstimateModifyingWithMetal(EstimateDTO.MetalOptionPut optionPut) {
         EstimateDTO.StatusResponse result = estimateService.putOption(optionPut);
         cartService.deleteCartItemByEstKey(optionPut.getEstKey());
         return result;
     }
 
+    @Transactional
     public EstimateDTO.StatusResponse deleteCartItemAtEstimateModifyingWithCNC(EstimateDTO.CnCOptionPut optionPut) {
         EstimateDTO.StatusResponse result = estimateService.putCncOption(optionPut);
         cartService.deleteCartItemByEstKey(optionPut.getEstKey());

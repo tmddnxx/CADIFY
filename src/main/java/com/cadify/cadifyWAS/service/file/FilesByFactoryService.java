@@ -16,24 +16,29 @@ import com.cadify.cadifyWAS.repository.Files.FilesRepository;
 import com.cadify.cadifyWAS.repository.factory.estimate.KFactorRepository;
 import com.cadify.cadifyWAS.util.PrivateValue;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
-@Log4j2
+@Slf4j
 @RequiredArgsConstructor
 public class FilesByFactoryService {
 
@@ -85,7 +90,8 @@ public class FilesByFactoryService {
         String existFileName = files.getFileName();
         String memberKey = files.getMemberKey();
 
-        if(estimate.getMethod().equals("cnc")) throw new RuntimeException("절삭은 k팩터를 적용할 수 없습니다.");
+        // 절삭은 K팩터 적용 불가
+        if(estimate.getMethod().equals("cnc")) throw new CustomLogicException(ExceptionCode.KFACTOR_NOT_APPLICABLE);
 
         String material = estimate.getMaterial();
         double thickness = estimate.getThickness();
@@ -154,7 +160,7 @@ public class FilesByFactoryService {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("S3 step 파일 다운로드 실패: {}", e.getMessage(), e);
         }
 
         /* 2번 */
@@ -189,7 +195,7 @@ public class FilesByFactoryService {
             garbageFilesDTO.setPath(s3PathKey); // 실패한 파일 경로 저장
             garbageFileService.saveGarbageFiles(garbageFilesDTO); // garbage 테이블에 저장
 
-            throw new RuntimeException("잠시 후 다시 시도해주세요.");
+            throw new CustomLogicException(ExceptionCode.TEMPORARY_ERROR);
         }
         
         /* 4번 */
@@ -198,8 +204,8 @@ public class FilesByFactoryService {
             sdkService.deleteFiles(Paths.get(dxfPath).getParent());
             sdkService.deleteFiles(stepDownloadPath.getParent());
         } catch (IOException e) {
-            log.error("파일 삭제 실패: {}", e.getMessage());
-            throw new RuntimeException("파일 처리중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+            log.error("파일 삭제 실패: {}", e.getMessage(), e);
+            throw new CustomLogicException(ExceptionCode.TEMPORARY_ERROR);
         }
 
         /* 5번 */
@@ -210,10 +216,27 @@ public class FilesByFactoryService {
 
 
 
+    // 견적 관련 파일 URL 목록 반환 (step, dxf 사용자, dxf 공장)
+    public List<String> getEstimateFileUrls(String estKey) {
+        String stepFileUrl = downloadStepFile(estKey);
+        String dxfFileUrl = downloadDxfByUser(estKey);
+        String dxfFactoryFileUrl = null;
+        try {
+            dxfFactoryFileUrl = downloadDxfByFactory(estKey);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        List<String> fileUrls = new ArrayList<>();
+        if (stepFileUrl != null) fileUrls.add(stepFileUrl);
+        if (dxfFileUrl != null) fileUrls.add(dxfFileUrl);
+        if (dxfFactoryFileUrl != null) fileUrls.add(dxfFactoryFileUrl);
+        return fileUrls;
+    }
+
     // 사용자가 dxf 파일을 올렸는지 확인
-    public boolean findOwnerDxfURL(Long estKey) throws Exception {
-        Estimate estimate = estimateRepository.findById(estKey).orElseThrow(() -> new Exception("상품을 찾을 수 없습니다."));
-        Files files = filesRepository.findById(estimate.getFileId()).orElseThrow(() -> new Exception("파일을 찾을 수 없습니다."));
+    public boolean findOwnerDxfURL(Long estKey) {
+        Estimate estimate = estimateRepository.findById(estKey).orElseThrow(() -> new CustomLogicException(ExceptionCode.ESTIMATE_NOT_FOUND));
+        Files files = filesRepository.findById(estimate.getFileId()).orElseThrow(() -> new CustomLogicException(ExceptionCode.FILES_NOT_FOUNT));
 
         return files.getS3DxfAddress() != null;
     }

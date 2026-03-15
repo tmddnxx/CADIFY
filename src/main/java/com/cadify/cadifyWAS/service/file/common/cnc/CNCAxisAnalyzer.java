@@ -1,14 +1,18 @@
 package com.cadify.cadifyWAS.service.file.common.cnc;
 
+import com.cadify.cadifyWAS.exception.CustomLogicException;
+import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class CNCAxisAnalyzer {
 
@@ -188,10 +192,13 @@ public class CNCAxisAnalyzer {
                 }
             }
 
-            throw new RuntimeException("분석할 가공 데이터가 없습니다.");
+            throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, "분석할 가공 데이터가 없습니다.");
 
+        } catch (CustomLogicException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("JSON 데이터 분석 오류: " + e.getMessage(), e);
+            log.error("JSON 데이터 분석 오류: {}", e.getMessage(), e);
+            throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, "JSON 데이터 분석 오류: " + e.getMessage());
         }
     }
 
@@ -1472,31 +1479,30 @@ public class CNCAxisAnalyzer {
         }
 
         // 최적 가공축 출력 (표준축 개수만 표시)
-        System.out.println("\n===== 최적 가공축 조합 =====");
-        System.out.println("최적 가공축 " + standardAxisCount + "개:");
+        log.debug("\n===== 최적 가공축 조합 =====");
+        log.debug("최적 가공축 {}개:", standardAxisCount);
 
         for (int i = 0; i < result.getOptimalAxes().size(); i++) {
             double[] axis = result.getOptimalAxes().get(i).getAxis();
             boolean isStandard = result.getOptimalAxes().get(i).isStandardAxis();
-            System.out.printf("%d: %s (%s)\n",
+            log.debug("{}: {} ({})",
                     i + 1,
                     formatAxis(axis),
                     isStandard ? "표준축" : "비표준축");
         }
 
         // 가공 대상 정보 출력
-        System.out.println("\n===== 가공 대상 정보 =====");
-        System.out.println("홀(Hole) 수: " + result.getMachiningInfo().getTotalHoleCount() + "개");
-        // 실린더 갯수 디버깅 메시지 추가
-        System.out.println("실린더(Cylinder) 수: " + result.getMachiningInfo().getTotalCylinderCount() + "개");
-        System.out.println("샤프트(Shaft) 수: " + result.getMachiningInfo().getTotalShaftCount() + "개");
-        System.out.println("총 가공 대상 수: " +
-                (result.getMachiningInfo().getTotalHoleCount() +
+        log.debug("\n===== 가공 대상 정보 =====");
+        log.debug("홀(Hole) 수: {}개", result.getMachiningInfo().getTotalHoleCount());
+        log.debug("실린더(Cylinder) 수: {}개", result.getMachiningInfo().getTotalCylinderCount());
+        log.debug("샤프트(Shaft) 수: {}개", result.getMachiningInfo().getTotalShaftCount());
+        log.debug("총 가공 대상 수: {}개",
+                result.getMachiningInfo().getTotalHoleCount() +
                         result.getMachiningInfo().getTotalCylinderCount() +
-                        result.getMachiningInfo().getTotalShaftCount()) + "개");
+                        result.getMachiningInfo().getTotalShaftCount());
 
         // 축별 최소 직경 출력 (표준축만 표시)
-        System.out.println("\n===== 축별 최소 홀/실린더 직경 (표준축만) =====");
+        log.debug("\n===== 축별 최소 홀/실린더 직경 (표준축만) =====");
         for (int i = 0; i < result.getAxisMinDiameters().size(); i++) {
             double[] axis = result.getAxisMinDiameters().get(i).getAxis();
             double minDiameter = result.getAxisMinDiameters().get(i).getMinDiameter();
@@ -1513,26 +1519,26 @@ public class CNCAxisAnalyzer {
 
             // 표준축만 출력
             if (isStandardAxis) {
-                System.out.printf("%s: %s\n",
+                log.debug("{}: {}",
                         formatAxis(axis),
                         minDiameter == 0 ? "해당 없음" : roundNumber(minDiameter));
             }
         }
 
         // 지그 필요 여부 출력
-        System.out.println("\n===== 지그 필요 여부 =====");
+        log.debug("\n===== 지그 필요 여부 =====");
         for (int i = 0; i < result.getJigRequirements().size(); i++) {
             String axisDisplay = result.getJigRequirements().get(i).getAxisDisplay();
             boolean jigNeeded = result.getJigRequirements().get(i).isJigNeeded();
-            System.out.printf("%s: %s\n",
+            log.debug("{}: {}",
                     axisDisplay,
                     jigNeeded ? "필요" : "불필요");
         }
-        System.out.println("표준축용 필요 지그 수: " + result.getStandardJigsNeeded() + "개");
-        System.out.println("참고: 마주보는 축(예: x+/x-)은 한 쌍으로 계산됩니다.");
+        log.debug("표준축용 필요 지그 수: {}개", result.getStandardJigsNeeded());
+        log.debug("참고: 마주보는 축(예: x+/x-)은 한 쌍으로 계산됩니다.");
 
         // 가공축 우선순위 출력
-        System.out.println("\n===== 가공축 우선순위 랭킹 =====");
+        log.debug("\n===== 가공축 우선순위 랭킹 =====");
         int displayCount = Math.min(result.getAxisPriorities().size(), 15);
         for (int i = 0; i < displayCount; i++) {
             double[] axis = result.getAxisPriorities().get(i).getAxis();
@@ -1540,7 +1546,7 @@ public class CNCAxisAnalyzer {
             int faceCount = result.getAxisPriorities().get(i).getFaceCount();
             int totalCount = holeShaftCount + faceCount;
 
-            System.out.printf("%d: %s (홀/샤프트: %d, 면: %d, 총합: %d)\n",
+            log.debug("{}: {} (홀/샤프트: {}, 면: {}, 총합: {})",
                     i + 1,
                     formatAxis(axis),
                     holeShaftCount,
@@ -1549,16 +1555,16 @@ public class CNCAxisAnalyzer {
         }
 
         // 면별 가공 세부 정보 출력
-        System.out.println("\n===== 면별 가공 세부 정보 =====");
+        log.debug("\n===== 면별 가공 세부 정보 =====");
         for (int i = 0; i < result.getFaceDetails().size(); i++) {
             double[] axis = result.getFaceDetails().get(i).getAxis();
-            System.out.printf("\n가공축: %s (총: %d개 면)\n",
+            log.debug("\n가공축: {} (총: {}개 면)",
                     formatAxis(axis),
                     result.getFaceDetails().get(i).getFaces().size());
 
             if (!result.getFaceDetails().get(i).getFaces().isEmpty()) {
-                System.out.println("면 ID\t유형\t직경");
-                System.out.println("-----------------------------");
+                log.debug("면 ID\t유형\t직경");
+                log.debug("-----------------------------");
 
                 for (int j = 0; j < result.getFaceDetails().get(i).getFaces().size(); j++) {
                     int faceId = result.getFaceDetails().get(i).getFaces().get(j).getId();
@@ -1572,31 +1578,31 @@ public class CNCAxisAnalyzer {
 
                     String displayDiameter = diameter > 0 ? String.valueOf(roundNumber(diameter)) : "-";
 
-                    System.out.printf("%d\t%s\t%s\n", faceId, displayType, displayDiameter);
+                    log.debug("{}\t{}\t{}", faceId, displayType, displayDiameter);
                 }
             } else {
-                System.out.println("이 축에 연결된 면이 없습니다.");
+                log.debug("이 축에 연결된 면이 없습니다.");
             }
         }
 
         // 3D 가공 정보 출력
-        System.out.println("\n===== 3D 가공이 필요한 면 =====");
+        log.debug("\n===== 3D 가공이 필요한 면 =====");
         if (!result.getThreeDMachining().getSpecialFaces().isEmpty()) {
-            System.out.printf("면 ID (총 %d개): %s\n",
+            log.debug("면 ID (총 {}개): {}",
                     result.getThreeDMachining().getSpecialFaces().size(),
                     String.join(", ", result.getThreeDMachining().getSpecialFaces().stream()
                             .map(String::valueOf).toArray(String[]::new)));
 
-            System.out.println("총 면적: " + roundNumber(result.getThreeDMachining().getTotalSpecialArea()) + " 제곱단위");
-            System.out.println("\n이 면들은 다음 조건 중 하나에 해당합니다:");
-            System.out.println("- 어떤 축으로도 가공이 불가능한 면");
-            System.out.println("- torus, b-surface, sphere 표면 타입");
-            System.out.println("- cylinder 타입이면서 모든 sideMilling이 불가능한 면");
-            System.out.println("- 표준 축으로 sideMilling이 불가능한 cylinder 면");
-            System.out.println("- 인식되지 않은 면 (unrecognized)");
-            System.out.println("- 표준 축으로는 가공이 불가능하고, 추천된 비표준 축으로만 가공이 가능한 면 (특수 지그 필요)");
+            log.debug("총 면적: {} 제곱단위", roundNumber(result.getThreeDMachining().getTotalSpecialArea()));
+            log.debug("이 면들은 다음 조건 중 하나에 해당합니다:");
+            log.debug("- 어떤 축으로도 가공이 불가능한 면");
+            log.debug("- torus, b-surface, sphere 표면 타입");
+            log.debug("- cylinder 타입이면서 모든 sideMilling이 불가능한 면");
+            log.debug("- 표준 축으로 sideMilling이 불가능한 cylinder 면");
+            log.debug("- 인식되지 않은 면 (unrecognized)");
+            log.debug("- 표준 축으로는 가공이 불가능하고, 추천된 비표준 축으로만 가공이 가능한 면 (특수 지그 필요)");
         } else {
-            System.out.println("3D 가공이 필요한 면이 없습니다.");
+            log.debug("3D 가공이 필요한 면이 없습니다.");
         }
 
         CNCAxisAnalyzer.Result analysisResult = Result.builder()

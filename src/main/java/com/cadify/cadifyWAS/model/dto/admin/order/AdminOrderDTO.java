@@ -1,9 +1,9 @@
 package com.cadify.cadifyWAS.model.dto.admin.order;
 
 import com.cadify.cadifyWAS.model.entity.order.OrderReceivedStatus;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -12,8 +12,9 @@ import java.util.List;
 public class AdminOrderDTO {
 
     // 총 주문 : 조회
+    @Getter
+    @Setter
     @NoArgsConstructor
-    @Data
     public static class OrderRequest {
         private String material = "";
         private String method = "";
@@ -66,5 +67,16 @@ public class AdminOrderDTO {
     public static class StatusUpdateRequests{
         private String key;
         private OrderReceivedStatus status;
+    }
+
+    // 상태 업데이트 응답
+    @Getter
+    @NoArgsConstructor
+    public static class StatusResponse {
+        private String status;
+
+        public StatusResponse(String status) {
+            this.status = status;
+        }
     }
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Version;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,9 @@ public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String addressKey;
+
+    @Version
+    private Long version;
 
     private String memberKey;
 

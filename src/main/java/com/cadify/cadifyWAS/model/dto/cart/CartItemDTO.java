@@ -3,6 +3,7 @@ package com.cadify.cadifyWAS.model.dto.cart;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,8 +14,9 @@ import java.time.LocalDate;
 public class CartItemDTO {
 
     @Getter
-    @Setter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class GetCartResponse{
 
         private Long cartItemKey;
@@ -60,6 +62,7 @@ public class CartItemDTO {
     }
 
     @Getter
+    @Setter
     @NoArgsConstructor
     public static class UpdateAmount{
         private Long cartItemKey;

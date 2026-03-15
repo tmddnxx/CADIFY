@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 public class FactoryEstimateQueryRepositoryImpl implements FactoryEstimateQueryRepository {
     private final JPAQueryFactory queryFactory;
     private static final QEstimate estimate = QEstimate.estimate;
-    private static final QFiles QFiles = com.cadify.cadifyWAS.model.entity.Files.QFiles.files;
+    private static final QFiles files = QFiles.files;
     private static final QOrderItem orderItem = QOrderItem.orderItem;
 
     public FactoryEstimateQueryRepositoryImpl(EntityManager entityManager) {
@@ -24,10 +24,10 @@ public class FactoryEstimateQueryRepositoryImpl implements FactoryEstimateQueryR
     @Override
     public Tuple findEstimateByorderItemKey(String orderItemKey) {
         return queryFactory
-                .select(orderItem, QFiles.factoryDxfAddress, QFiles.s3DxfAddress, QFiles.imageAddress, QFiles.s3StepAddress)
+                .select(orderItem, files.factoryDxfAddress, files.s3DxfAddress, files.imageAddress, files.s3StepAddress)
                 .from(orderItem)
                 .join(estimate).on(orderItem.estKey.eq(estimate.estKey))
-                .join(QFiles).on(estimate.fileId.eq(QFiles.id))
+                .join(files).on(estimate.fileId.eq(files.id))
                 .where(orderItem.orderItemKey.eq(orderItemKey))
                 .fetchFirst();
     }

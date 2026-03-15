@@ -1,6 +1,10 @@
 package com.cadify.cadifyWAS.model.dto.files;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +23,6 @@ public class FilesDTO {
         private String metaJson; // metaJson
     }
 
-    @Setter
     @Getter
     @Builder
     @NoArgsConstructor

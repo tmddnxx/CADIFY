@@ -4,7 +4,11 @@ import com.cadify.cadifyWAS.service.file.common.CommentType;
 import com.cadify.cadifyWAS.service.file.common.EstimateStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.domain.Page;
 
@@ -169,23 +173,27 @@ public class EstimateDTO {
     }
 
     @Getter
+    @NoArgsConstructor
     public static class Request{
         private String stpUrl;
     }
 
     @Getter
+    @NoArgsConstructor
     public static class MemoPut{
         private String estKey; // 견적 pk
         private String memo; // 메모
     }
 
     @Getter
+    @NoArgsConstructor
     public static class MoveFolder{
         private List<String> estKeys; // 견적 pk
         private String folderKey; // 폴더 pk
     }
 
     @Getter
+    @NoArgsConstructor
     public static class Delete{
         private List<String> estKeys; // 견적 pk
     }

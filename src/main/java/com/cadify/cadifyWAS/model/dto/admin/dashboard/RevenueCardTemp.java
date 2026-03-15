@@ -1,5 +1,6 @@
 package com.cadify.cadifyWAS.model.dto.admin.dashboard;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -9,6 +10,7 @@ public class RevenueCardTemp {
     private Integer revenue;
     private String percent;
 
+    @Builder
     public RevenueCardTemp(Integer revenue, Integer previous){
         this.revenue = revenue;
         this.percent = calcPercents(revenue, previous);

@@ -53,7 +53,6 @@ public class CartItemMapper {
         return CartItemDTO.GetCartResponse.builder()
                 .cartItemKey(cartItem.getCartItemKey())
                 .estKey(cartItem.getEstKey())
-                .estKey(cartItem.getEstKey())
                 .fileName(cartItem.getFileName())
                 .amount(cartItem.getAmount())
                 .isChamfer(cartItem.isChamfer())

@@ -27,6 +27,7 @@ public enum ResultCode {
     CREATE_MANAGER_SUCCESS(200, "CREATE_MANAGER_SUCCESS", "담당자 등록 성공"),
     UPDATE_ROLE_SUCCESS(200, "UPDATE_ROLE_SUCCESS", "유저 역할 등록 성공"),
     UPDATE_MY_INFO_SUCCESS(200, "UPDATE_MY_INFO_SUCCESS", "내 정보 변경 성공"),
+    SEND_MAIL_SUCCESS(200, "SEND_MAIL_SUCCESS", "메일 발송 성공"),
 
 
 

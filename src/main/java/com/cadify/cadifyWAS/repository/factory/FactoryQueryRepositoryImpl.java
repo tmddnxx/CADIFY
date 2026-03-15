@@ -13,8 +13,8 @@ import java.util.Optional;
 public class FactoryQueryRepositoryImpl implements FactoryQueryRepository {
 
     private final JPAQueryFactory queryFactory;
-    private final QFactory factory = QFactory.factory;
-    private final QFactoryAdmin factoryAdmin = QFactoryAdmin.factoryAdmin;
+    private static final QFactory factory = QFactory.factory;
+    private static final QFactoryAdmin factoryAdmin = QFactoryAdmin.factoryAdmin;
 
     public FactoryQueryRepositoryImpl(EntityManager entityManager) {
         this.queryFactory = new JPAQueryFactory(entityManager);

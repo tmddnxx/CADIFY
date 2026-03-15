@@ -1,13 +1,14 @@
 package com.cadify.cadifyWAS.model.dto.admin.member;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-@NoArgsConstructor
 @Getter
+@NoArgsConstructor
 public class FilteredMemberResponse {
     private String name;
     private String email;
@@ -16,6 +17,7 @@ public class FilteredMemberResponse {
     private String joined;
     private Integer amount;
 
+    @Builder
     public FilteredMemberResponse(String name, String email, String phone, Long orderCount, LocalDateTime joined, Integer amount){
         this.name = name;
         this.email = email;

@@ -6,7 +6,11 @@ import com.cadify.cadifyWAS.model.dto.payment.PaymentDTO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,9 +36,9 @@ public class OrdersDTO {
 
     //주문 전체 조회
     @Getter
-    @Setter
     @Builder
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class AllResponse {
 
         //주문 정보
@@ -49,9 +53,9 @@ public class OrdersDTO {
 
     // 주문 단건 조회
     @Getter
-    @Setter
     @Builder
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class Response{
         private String orderKey;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -70,15 +74,17 @@ public class OrdersDTO {
     }
 
     @Getter
-    @Setter
     @Builder
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class CreateResponse{
         private String orderKey;
     }
 
     @Getter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class SuccessResponse{
         private String orderKey;
         private LocalDateTime orderAt;

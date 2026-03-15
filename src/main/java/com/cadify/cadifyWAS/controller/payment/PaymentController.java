@@ -10,30 +10,32 @@ import com.cadify.cadifyWAS.service.orchestrator.PaymentEstimateFacade;
 import com.cadify.cadifyWAS.service.payment.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.thymeleaf.TemplateEngine;
-
-import java.io.IOException;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import java.net.URLEncoder;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/payment")
+@Slf4j
 public class PaymentController {
 
     private final PaymentService paymentService;
-    private final TemplateEngine templateEngine;
     private final PaymentEstimateFacade paymentEstimateFacade;
 
     // 결제 검증
     @PostMapping("/confirm")
-    public ResponseEntity<OrdersDTO.SuccessResponse> confirmPayment(@RequestBody PaymentDTO.Confirm confirmRequest) throws IOException, InterruptedException {
+    public ResponseEntity<OrdersDTO.SuccessResponse> confirmPayment(@Valid @RequestBody PaymentDTO.Confirm confirmRequest) {
         List<EstimateDTO.EstimateValidStatus> estimateValidStatusList = paymentEstimateFacade.getEstimateValidStatusList(confirmRequest.getEstKeys());
         return ResponseEntity.ok(paymentService.confirmPayment(estimateValidStatusList, confirmRequest));
     }
@@ -63,21 +65,21 @@ public class PaymentController {
 
     // 결제 취소
     @PostMapping("/{tid}/cancel")
-    public ResponseEntity<ResultResponse> cancelPaymentByUser(@PathVariable String tid, @RequestBody PaymentDTO.CancelRequest cancelRequest) throws IOException, InterruptedException {
+    public ResponseEntity<ResultResponse> cancelPaymentByUser(@PathVariable String tid, @Valid @RequestBody PaymentDTO.CancelRequest cancelRequest) {
         paymentService.cancelPaymentByUser(tid, cancelRequest);
         return ResponseEntity.ok().body(ResultResponse.of(ResultCode.PAYMENT_CANCEL_USER_SUCCESS));
     }
 
     //망 취소
     @PostMapping("/cancel/network")
-    public ResponseEntity<ResultResponse> cancelPaymentByNetwork(@RequestBody PaymentDTO.CancelRequestByNetwork cancelRequest) throws IOException, InterruptedException {
+    public ResponseEntity<ResultResponse> cancelPaymentByNetwork(@Valid @RequestBody PaymentDTO.CancelRequestByNetwork cancelRequest) {
         paymentService.cancelPaymentByNetwork(cancelRequest);
         return ResponseEntity.ok().body(ResultResponse.of(ResultCode.PAYMENT_CANCEL_BY_NETWORK_SUCCESS));
     }
 
     //거래 조회
     @GetMapping("/{tid}")
-    public ResponseEntity<PaymentDTO.Response> getPayment(@PathVariable String tid) throws IOException, InterruptedException {
+    public ResponseEntity<PaymentDTO.Response> getPayment(@PathVariable String tid) {
         return ResponseEntity.ok().body(paymentService.getPayment(tid));
     }
 

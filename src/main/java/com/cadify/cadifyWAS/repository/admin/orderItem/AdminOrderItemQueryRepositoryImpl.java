@@ -23,7 +23,7 @@ public class AdminOrderItemQueryRepositoryImpl implements AdminOrderItemQueryRep
 
     private final JPAQueryFactory queryFactory;
 
-    private final QOrderItem item = QOrderItem.orderItem;
+    private static final QOrderItem item = QOrderItem.orderItem;
 
     public AdminOrderItemQueryRepositoryImpl(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);

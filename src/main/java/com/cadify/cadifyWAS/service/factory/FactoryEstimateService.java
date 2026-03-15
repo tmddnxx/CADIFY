@@ -9,12 +9,12 @@ import com.cadify.cadifyWAS.service.file.common.FileCommon;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
+@Slf4j
 public class FactoryEstimateService {
     private final FactoryEstimateQueryRepository factoryEstimateQueryRepository;
     private final FactoryMapper factoryMapper;
@@ -28,7 +28,7 @@ public class FactoryEstimateService {
         try {
             estimateResponse = factoryMapper.estimateToResponse(tuple);
         } catch (JsonProcessingException e) {
-            throw new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED);
+            throw new CustomLogicException(ExceptionCode.ESTIMATE_ERROR_JSON);
         }
         estimateResponse.setDxfName(FileCommon.extractDxfFileName(estimateResponse.getS3DxfAddress()));
         return estimateResponse;

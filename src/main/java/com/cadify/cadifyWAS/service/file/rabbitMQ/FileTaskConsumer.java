@@ -2,16 +2,15 @@ package com.cadify.cadifyWAS.service.file.rabbitMQ;
 
 import com.cadify.cadifyWAS.config.RabbitMqConfig;
 import com.cadify.cadifyWAS.config.SseEmitters;
-import com.cadify.cadifyWAS.controller.files.TestController;
 import com.cadify.cadifyWAS.model.dto.files.EstimateDTO;
 import com.cadify.cadifyWAS.model.dto.files.FileTask;
 import com.cadify.cadifyWAS.service.file.FileLogService;
 import com.cadify.cadifyWAS.service.file.FilesService;
 import com.cadify.cadifyWAS.service.file.FilesTaskService;
-import com.cadify.cadifyWAS.service.file.TestService;
 import com.cadify.cadifyWAS.service.file.common.Method;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +19,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class FileTaskConsumer {
 
     private final FilesService filesService;
@@ -30,7 +30,7 @@ public class FileTaskConsumer {
     // 판금 업로드
     @RabbitListener(queues = RabbitMqConfig.METAL_UPLOAD_QUEUE_NAME, containerFactory = "metalFileUploadRabbitListener")
     public void receiveByMetalTest(FileTask task) {
-        System.out.println("🟢 판금 업로드 시작: " + task.getOriginFileName());
+        log.info("판금 업로드 시작: {}", task.getOriginFileName());
         filesService.executeTask(task, Method.METAL); // ecs 태스크 실행요청
     }
 
@@ -38,7 +38,7 @@ public class FileTaskConsumer {
     @RabbitListener(queues = RabbitMqConfig.METAL_RESULT_QUEUE_NAME, containerFactory = "metalFileResultRabbitListener")
     public void receiveByMetalResult(FileTask taskResult) throws IOException {
         try {
-            System.out.println("🟢 판금 후처리 시작: " + taskResult.getOriginFileName());
+            log.info("판금 후처리 시작: {}", taskResult.getOriginFileName());
             long startTime = System.currentTimeMillis();
 
             EstimateDTO.StatusResponse statusResponse = filesService.processingMetalResult(taskResult); // 판금 결과 처리
@@ -47,10 +47,10 @@ public class FileTaskConsumer {
             long endTime = System.currentTimeMillis();
             long elapsedTime = endTime - startTime;
 
-            System.out.println("🟢 판금 처리 끝: " + taskResult.getOriginFileName() + " (소요 시간: " + elapsedTime + "ms)");
+            log.info("판금 처리 끝: {} (소요 시간: {}ms)", taskResult.getOriginFileName(), elapsedTime);
 
         } catch (Exception e) {
-            System.err.println("❌ 판금 처리 실패: " + e.getMessage());
+            log.error("판금 처리 실패: {}", e.getMessage(), e);
             sendSseResponseSafely(taskResult.getMemberKey(), createFailureResponse(taskResult, e));
             fileLogService.saveFileUploadFailedLog(taskResult, e.getMessage()); // 실패 로그 저장
         } finally {
@@ -62,7 +62,7 @@ public class FileTaskConsumer {
     // 절삭
     @RabbitListener(queues = RabbitMqConfig.CNC_UPLOAD_QUEUE_NAME, containerFactory = "cncFileUploadRabbitListener")
     public void receiveByCnC(FileTask task) throws IOException {
-        System.out.println("🟢 절삭 업로드 시작: " + task.getOriginFileName());
+        log.info("절삭 업로드 시작: {}", task.getOriginFileName());
         filesService.executeTask(task, Method.CNC); // ecs 태스크 실행요청
     }
 
@@ -70,7 +70,7 @@ public class FileTaskConsumer {
     @RabbitListener(queues = RabbitMqConfig.CNC_RESULT_QUEUE_NAME, containerFactory = "cncFileResultRabbitListener")
     public void receiveByCNCResult(FileTask taskResult) throws IOException {
         try {
-            System.out.println("🟢 절삭 후처리 시작: " + taskResult.getOriginFileName());
+            log.info("절삭 후처리 시작: {}", taskResult.getOriginFileName());
             long startTime = System.currentTimeMillis();
 
             EstimateDTO.StatusResponse statusResponse = filesService.processingCNCResult(taskResult); // 판금 결과 처리
@@ -79,10 +79,10 @@ public class FileTaskConsumer {
             long endTime = System.currentTimeMillis();
             long elapsedTime = endTime - startTime;
 
-            System.out.println("🟢 절삭 처리 끝: " + taskResult.getOriginFileName() + " (소요 시간: " + elapsedTime + "ms)");
+            log.info("절삭 처리 끝: {} (소요 시간: {}ms)", taskResult.getOriginFileName(), elapsedTime);
 
         } catch (Exception e) {
-            System.err.println("❌ 절삭 처리 실패: " + e.getMessage());
+            log.error("절삭 처리 실패: {}", e.getMessage(), e);
             sendSseResponseSafely(taskResult.getMemberKey(), createFailureResponse(taskResult, e));
             fileLogService.saveFileUploadFailedLog(taskResult, e.getMessage()); // 실패 로그 저장
         } finally {
@@ -96,7 +96,7 @@ public class FileTaskConsumer {
         try {
             sseEmitters.sendToClient(memberKey, response);
         } catch (Exception e) {
-            System.out.println("⚠️ SSE 전송 실패 (무시): " + e.getMessage());
+            log.warn("SSE 전송 실패 (무시): {}", e.getMessage());
         }
     }
 

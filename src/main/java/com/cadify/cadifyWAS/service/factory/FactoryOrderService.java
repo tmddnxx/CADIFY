@@ -36,6 +36,9 @@ public class FactoryOrderService {
     // 공장용 주문 조회
     @Transactional(readOnly = true)
     public List<OrderResponse> getOrders(List<String> status){
+        if (status == null) {
+            status = List.of();
+        }
         List<OrderReceivedStatus> statusParam = status.stream()
                 .map(String::toUpperCase)
                 .map(statusStr -> {
@@ -77,6 +80,10 @@ public class FactoryOrderService {
     // order item 제작 불가 판정
     @Transactional
     public RejectedItemResponse rejectOrderItem(FactoryOrderDTO.RejectRequest request){
+        // 거절사유 Not Null
+        if (request.getRejectReasonDetail() == null || request.getRejectReasonDetail().isEmpty()) {
+            throw new CustomLogicException(ExceptionCode.REJECTED_REASON_REQUIRED);
+        }
         Factory factory = getValidFactory();
         return factoryOrderRepository.rejectOrderItem(factory.getFactoryKey(), factory.getFactoryType(), request);
     }
@@ -84,6 +91,14 @@ public class FactoryOrderService {
     // order item 송장 등록
     @Transactional
     public List<OrderItemResponse> startShipping(FactoryOrderDTO.StartShippingRequest request){
+        // 송장번호 입력, 담당 택배사, 아이템 선택 확인
+        if (request.getTrackingNumber() == null || request.getTrackingNumber().isEmpty()) {
+            throw new CustomLogicException(ExceptionCode.REQUIRED_TRACKING_NUMBER);
+        } else if (request.getCourier() == null || request.getCourier().isEmpty()) {
+            throw new CustomLogicException(ExceptionCode.REQUIRED_COURIER_NAME);
+        } else if (request.getItemKeyList() == null || request.getItemKeyList().isEmpty()) {
+            throw new CustomLogicException(ExceptionCode.REQUIRED_ITEM_KEYS);
+        }
         Factory factory = getValidFactory();
         List<OrderItemResponse> response = factoryOrderRepository.startShippingAndReturnRemainedItems(factory.getFactoryKey(), factory.getFactoryType(), request);
 

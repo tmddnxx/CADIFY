@@ -1,7 +1,12 @@
 package com.cadify.cadifyWAS.model.entity.Files;
 
 import com.cadify.cadifyWAS.model.dto.files.GarbageFilesDTO;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +22,9 @@ public class GarbageFiles {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long gno;
+
+    @Version
+    private Long version;
 
     @Column(nullable = false)
     private String bucket; // s3 버킷 이름

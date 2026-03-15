@@ -1,5 +1,6 @@
 package com.cadify.cadifyWAS.model.dto.company;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ public class CompanyManagerResponse {
     private String phone;
     private String managerName;
 
+    @Builder
     public CompanyManagerResponse(String managerKey, String phone, String department, String position, String managerName){
         this.managerKey = managerKey;
         this.phone = phone;

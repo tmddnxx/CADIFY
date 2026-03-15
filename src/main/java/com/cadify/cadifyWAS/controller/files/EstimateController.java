@@ -8,18 +8,25 @@ import com.cadify.cadifyWAS.service.orchestrator.EstimateCartFacade;
 import com.cadify.cadifyWAS.util.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.http.*;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-
+@Slf4j
 @RestController
-@Log4j2
 @RequestMapping("/api/estimate")
 @RequiredArgsConstructor
 public class EstimateController {
@@ -33,86 +40,43 @@ public class EstimateController {
     public ResponseEntity<EstimateDTO.ListResponse> getEstimateList(@PathVariable(value = "folderKey", required = false) String folderKey) {
         log.info("폴더 키 : {}", folderKey);
         String memberKey = jwtUtil.getAuthPrincipal();
-
-        return new ResponseEntity<>(estimateService.estimateList(memberKey, folderKey), HttpStatus.OK); // 200 상태 코드와 함께 데이터 반환
+        return new ResponseEntity<>(estimateService.estimateList(memberKey, folderKey), HttpStatus.OK);
     }
 
     // 단일 견적 조회 + json
     @GetMapping(value = "/{estKey}")
-    public ResponseEntity<?> getEstimate(@PathVariable("estKey") String estKey) {
-        try {
-            EstimateDTO.Response response = estimateService.getEstimate(estKey);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatusCode.valueOf(500)).body(e.getMessage());
-        }
+    public ResponseEntity<EstimateDTO.Response> getEstimate(@PathVariable("estKey") String estKey) {
+        EstimateDTO.Response response = estimateService.getEstimate(estKey);
+        return ResponseEntity.ok(response);
     }
 
     // 모델링 이름 업데이트
     @PatchMapping(value = "/fileName/{estKey}/{fileName}")
     public ResponseEntity<EstimateDTO.StatusResponse> patchFileName(@PathVariable("estKey") String estKey, @PathVariable("fileName") String fileName) {
-
-        try {
-            EstimateDTO.StatusResponse statusResponse = estimateService.patchFileName(estKey, fileName);
-            return ResponseEntity.ok(statusResponse);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatusCode.valueOf(500))
-                    .body(EstimateDTO.StatusResponse.builder()
-                            .estKey(estKey)
-                            .fileName(fileName)
-                            .isSuccess(false)
-                            .message(e.getMessage())
-                            .build());
-        }
+        EstimateDTO.StatusResponse statusResponse = estimateService.patchFileName(estKey, fileName);
+        return ResponseEntity.ok(statusResponse);
     }
 
     // 판금 옵션 업데이트
     @PutMapping(value = "/metal/option")
     public ResponseEntity<EstimateDTO.StatusResponse> putOption(@Valid @RequestBody EstimateDTO.MetalOptionPut optionPut) {
-        try {
-            EstimateDTO.StatusResponse statusResponse = estimateCartFacade.deleteCartItemAtEstimateModifyingWithMetal(optionPut);
-            return ResponseEntity.ok(statusResponse);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatusCode.valueOf(500))
-                    .body(EstimateDTO.StatusResponse.builder()
-                            .estKey(optionPut.getEstKey())
-                            .isSuccess(false)
-                            .message(e.getMessage())
-                            .build());
-        }
+        EstimateDTO.StatusResponse statusResponse = estimateCartFacade.deleteCartItemAtEstimateModifyingWithMetal(optionPut);
+        return ResponseEntity.ok(statusResponse);
     }
 
     // 절삭 옵션 업데이트
     @PutMapping(value = "/cnc/option")
     public ResponseEntity<EstimateDTO.StatusResponse> putCncOption(@Valid @RequestBody EstimateDTO.CnCOptionPut cncOptionPut) {
-        try {
-            EstimateDTO.StatusResponse statusResponse = estimateCartFacade.deleteCartItemAtEstimateModifyingWithCNC(cncOptionPut);
-            return ResponseEntity.ok(statusResponse);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatusCode.valueOf(500))
-                    .body(EstimateDTO.StatusResponse.builder()
-                            .estKey(cncOptionPut.getEstKey())
-                            .isSuccess(false)
-                            .message(e.getMessage())
-                            .build());
-        }
+        EstimateDTO.StatusResponse statusResponse = estimateCartFacade.deleteCartItemAtEstimateModifyingWithCNC(cncOptionPut);
+        return ResponseEntity.ok(statusResponse);
     }
 
     // 뷰어에서 모델링 dxf 파일 업로드
     @PatchMapping(value = "/dxf/{estKey}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<EstimateDTO.StatusResponse> patchDxf(@PathVariable("estKey") String estKey, @RequestPart("file")MultipartFile file){
-        try {
-            String memberKey = jwtUtil.getAuthPrincipal();
-            EstimateDTO.StatusResponse statusResponse = estimateService.patchDxf(memberKey, estKey, file);
-            return ResponseEntity.ok(statusResponse);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatusCode.valueOf(500))
-                    .body(EstimateDTO.StatusResponse.builder()
-                            .estKey(estKey)
-                            .isSuccess(false)
-                            .message(e.getMessage())
-                            .build());
-        }
+    public ResponseEntity<EstimateDTO.StatusResponse> patchDxf(@PathVariable("estKey") String estKey, @RequestPart("file") MultipartFile file) {
+        String memberKey = jwtUtil.getAuthPrincipal();
+        EstimateDTO.StatusResponse statusResponse = estimateService.patchDxf(memberKey, estKey, file);
+        return ResponseEntity.ok(statusResponse);
     }
 
     // 뷰어에서 dxf 파일 삭제
@@ -122,10 +86,9 @@ public class EstimateController {
         return ResponseEntity.ok().body(resultResponse);
     }
 
-
     // stp 다운로드 url 반환
     @PostMapping(value = "/stp")
-    public ResponseEntity<String> downloadSTP(@RequestBody EstimateDTO.Request request){
+    public ResponseEntity<String> downloadSTP(@RequestBody EstimateDTO.Request request) {
         String redirectUrl = estimateService.downloadSTP(request.getStpUrl());
 
         HttpHeaders headers = new HttpHeaders();
@@ -145,7 +108,6 @@ public class EstimateController {
     @PostMapping("/moveFolder")
     public ResponseEntity<ResultResponse> moveEstimateFolder(@RequestBody EstimateDTO.MoveFolder move) {
         ResultResponse response = estimateService.moveEstimateFolder(move);
-
         return ResponseEntity.ok().body(response);
     }
 
@@ -153,7 +115,6 @@ public class EstimateController {
     @PostMapping(value = "/delete")
     public ResponseEntity<ResultResponse> deleteFile(@RequestBody EstimateDTO.Delete delete) {
         ResultResponse response = estimateService.deleteEstimate(delete);
-
         return ResponseEntity.ok().body(response);
     }
 
@@ -163,33 +124,6 @@ public class EstimateController {
             @PathVariable("id") String id) {
         ResultResponse response = estimateService.updateEstimateRequestFlag(estKey, id);
         return ResponseEntity.ok().body(response);
-    }
-
-    // 유효성 검증 예외 처리
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<EstimateDTO.StatusResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        BindingResult bindingResult = ex.getBindingResult();
-
-        // 검증 오류 메시지를 하나의 문자열로 합침
-        StringBuilder errorMessage = new StringBuilder();
-        for (FieldError fieldError : bindingResult.getFieldErrors()) {
-            errorMessage.append(fieldError.getField())
-                    .append(" ")
-                    .append(fieldError.getDefaultMessage())
-                    .append(", ");
-        }
-
-        // 마지막에 불필요한 쉼표 제거
-        if (errorMessage.length() > 0) {
-            errorMessage.setLength(errorMessage.length() - 2);
-        }
-
-        // 검증 오류 메시지를 클라이언트에 전달
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(EstimateDTO.StatusResponse.builder()
-                        .isSuccess(false)
-                        .message(errorMessage.toString())
-                        .build());
     }
 
 }

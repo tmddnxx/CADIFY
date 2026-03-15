@@ -4,7 +4,12 @@ import com.cadify.cadifyWAS.exception.CustomLogicException;
 import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.cadify.cadifyWAS.service.file.enumValues.common.Shipment;
 import com.cadify.cadifyWAS.util.base.BaseTimeEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Version;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,6 +31,9 @@ public class CartItem extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long cartItemKey;
 
+    @Version
+    private Long version;
+
     @NotNull
     private Long cartKey;
 
@@ -40,20 +48,25 @@ public class CartItem extends BaseTimeEntity {
 
     private String type; // 가공타입(절곡, 절단, 레이저, 밀링 등)
 
+    @Builder.Default
     private int cost = 0; // 원가
 
     private boolean isFastShipment; // 단납기(true) or 표준납기(false)
 
     private String material; // 재질
 
+    @Builder.Default
     private double thickness = 0; // 두께
 
+    @Builder.Default
     private String surface = "없음"; // 표면처리
 
     private String coatingColor; // 도장 색상 (표면처리 도장선택시)
 
+    @Builder.Default
     private boolean isChamfer = false; // 실면취
 
+    @Builder.Default
     private double kg = 0.0; // 형상 무게
 
     private String commonDiff; // 공차
@@ -103,8 +116,10 @@ public class CartItem extends BaseTimeEntity {
     /**
      * 장바구니 금액 관련
      */
+    @Builder.Default
     private int amount = 1; // 수량
 
+    @Builder.Default
     private int unitPrice = 0; // 사용자가 선택한 납기에 대한 총 가격
 
     private int totalPrice; // 소계 ( 가격 * 수량)

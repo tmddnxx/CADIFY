@@ -1,13 +1,14 @@
 package com.cadify.cadifyWAS.model.dto.admin.order;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-@NoArgsConstructor
 @Getter
+@NoArgsConstructor
 public class OrderDetails {
     // 주문 세부정보
     private String orderKey;
@@ -19,6 +20,7 @@ public class OrderDetails {
     private String addressDetail;
     private String deliveryRequest;
 
+    @Builder
     public OrderDetails(String orderKey, String name, String factoryName, LocalDate shipmentDate, String address, String addressDetail, String deliveryRequest){
         this.orderKey = orderKey;
         this.name = name;

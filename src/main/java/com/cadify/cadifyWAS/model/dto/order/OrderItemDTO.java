@@ -1,12 +1,13 @@
 package com.cadify.cadifyWAS.model.dto.order;
 
-import com.cadify.cadifyWAS.model.entity.order.OrderItem;
-
 import com.cadify.cadifyWAS.model.entity.order.OrderReceivedStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
@@ -22,14 +23,13 @@ public class OrderItemDTO {
     }
 
     @Getter
-    @Setter
-    @AllArgsConstructor
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class Response{
 
         private String orderItemKey;
 
-        @Column(nullable = false, unique = true)
         private String estName; // 견적이름 (CDF-UUID-UUID숫자-UUID)
 
         @Builder.Default
@@ -41,6 +41,7 @@ public class OrderItemDTO {
 
         private int amount; // 수량
 
+        @Builder.Default
         private int unitPrice = 0; // 사용자가 선택한 납기에 대한 총 가격
 
         private int totalPrice; // 소계 ( 가격 * 수량)
@@ -71,14 +72,14 @@ public class OrderItemDTO {
         private String courier; // 택배사
     }
 
-    @Setter
-    @AllArgsConstructor
+    @Getter
     @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
     public static class AllResponse{
 
         private String orderItemKey;
 
-        @Column(nullable = false, unique = true)
         private String estName; // 견적이름 (CDF-UUID-UUID숫자-UUID)
 
         @Builder.Default

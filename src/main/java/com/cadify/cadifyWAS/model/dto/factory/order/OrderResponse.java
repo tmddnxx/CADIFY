@@ -1,6 +1,7 @@
 package com.cadify.cadifyWAS.model.dto.factory.order;
 
 import com.cadify.cadifyWAS.model.entity.order.OrderReceivedStatus;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -30,6 +31,7 @@ public class OrderResponse {
             "CNC", "절삭"
     );
 
+    @Builder
     public OrderResponse(LocalDateTime createdAt, String orderKey, String name, String type, Long fileCnt, LocalDate shipmentDate, Integer totalPrice, OrderReceivedStatus status, LocalDateTime modifiedAt){
         this.date = createdAt.toLocalDate().format(DateTimeFormatter.ISO_DATE);
         this.orderKey = orderKey;

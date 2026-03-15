@@ -1,8 +1,11 @@
 package com.cadify.cadifyWAS.service.payment;
 
+import com.cadify.cadifyWAS.exception.CustomLogicException;
+import com.cadify.cadifyWAS.exception.ExceptionCode;
 import com.cadify.cadifyWAS.model.dto.payment.PaymentDTO;
 import com.cadify.cadifyWAS.model.dto.payment.PaymentTestDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -14,6 +17,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentTestService {
 
     private final WebClient webClientNicePaymentTest;
@@ -36,7 +40,7 @@ public class PaymentTestService {
                 .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
                         clientResponse -> clientResponse.bodyToMono(String.class)
                                 .flatMap(errorBody -> {
-                                    return Mono.error(new RuntimeException("NicePay API Error: " + errorBody));
+                                    return Mono.error(new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, errorBody));
                                 }))
                 .bodyToMono(PaymentTestDto.ConfirmResponse.class) // 응답 DTO로 변환
                 .block();// **여기서 블로킹 발생**
@@ -52,7 +56,7 @@ public class PaymentTestService {
                 .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
                         clientResponse -> clientResponse.bodyToMono(String.class)
                                 .flatMap(errorBody -> {
-                                    return Mono.error(new RuntimeException("NicePay API Error: " + errorBody));
+                                    return Mono.error(new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, errorBody));
                                 }))
                 .bodyToMono(PaymentTestDto.TransactionQueryResponse.class)
                 .block(); // 블로킹
@@ -71,7 +75,7 @@ public class PaymentTestService {
                 .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
                         clientResponse -> clientResponse.bodyToMono(String.class)
                                 .flatMap(errorBody -> {
-                                    return Mono.error(new RuntimeException("NicePay API Error: " + errorBody));
+                                    return Mono.error(new CustomLogicException(ExceptionCode.UNKNOWN_EXCEPTION_OCCURED, errorBody));
                                 }))
                 .bodyToMono(PaymentTestDto.CancelResponse.class)
                 .block();

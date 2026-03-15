@@ -9,11 +9,13 @@ import com.cadify.cadifyWAS.repository.factory.FactoryQueryRepository;
 import com.cadify.cadifyWAS.repository.factory.FactoryRepository;
 import com.cadify.cadifyWAS.security.jwt.JwtPrincipal;
 import com.cadify.cadifyWAS.util.JwtUtil;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FactoryService {
@@ -58,7 +60,7 @@ public class FactoryService {
     private Factory isValidFactory(){
         JwtPrincipal principal = jwtUtil.getAuthPrincipalObject();
         // 역할 검증
-        if( (principal.getRole() != MemberRole.ADMIN) || (principal.getRole() != MemberRole.FACTORY)){
+        if( (principal.getRole() != MemberRole.ADMIN) && (principal.getRole() != MemberRole.FACTORY)){
             throw new CustomLogicException(ExceptionCode.NOT_FACTORY_ADMIN);
         }
 

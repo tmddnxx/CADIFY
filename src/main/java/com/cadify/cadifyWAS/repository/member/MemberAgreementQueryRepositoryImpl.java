@@ -17,11 +17,11 @@ import java.util.List;
 public class MemberAgreementQueryRepositoryImpl implements MemberAgreementQueryRepository {
 
     private final JPAQueryFactory queryFactory;
-    private final QMemberAgreement agreement = QMemberAgreement.memberAgreement;
-    private final QOAuthMember member = QOAuthMember.oAuthMember;
+    private static final QMemberAgreement agreement = QMemberAgreement.memberAgreement;
+    private static final QOAuthMember member = QOAuthMember.oAuthMember;
 
-    public MemberAgreementQueryRepositoryImpl(EntityManager entitymanager) {
-        this.queryFactory = new JPAQueryFactory(entitymanager);
+    public MemberAgreementQueryRepositoryImpl(EntityManager entityManager) {
+        this.queryFactory = new JPAQueryFactory(entityManager);
     }
 
     @Override

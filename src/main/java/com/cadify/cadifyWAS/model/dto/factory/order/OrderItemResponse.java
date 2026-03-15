@@ -1,14 +1,15 @@
 package com.cadify.cadifyWAS.model.dto.factory.order;
 
 import com.cadify.cadifyWAS.model.entity.order.OrderReceivedStatus;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-@NoArgsConstructor
 @Getter
+@NoArgsConstructor
 public class OrderItemResponse {
     private String itemKey; // 아이템 PK
     private String fileName;    // 파일 이름
@@ -26,6 +27,7 @@ public class OrderItemResponse {
     private String trackingNumber;  // 송장번호
     private String courier; // 배송업체
 
+    @Builder
     public OrderItemResponse(
             String itemKey, String fileName, String estName, String material, String method, Double thickness,
             Integer amount, LocalDate shipmentDate, String surface, String estKey, String imageUrl, OrderReceivedStatus status, String orderKey, String trackingNumber, String courier)

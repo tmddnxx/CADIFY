@@ -11,7 +11,9 @@ import com.cadify.cadifyWAS.security.jwt.JwtProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
-import jakarta.transaction.Transactional;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -68,6 +70,20 @@ public class AuthService {
             log.warn("Refresh Token 검증 실패: {}", e.getMessage());
             throw new CustomLogicException(ExceptionCode.INVALID_REFRESH_TOKEN);
         }
+    }
+
+    // HttpServletRequest 에서 refreshToken 쿠키 값 추출. 없으면 CustomLogicException 발생
+    public String extractRefreshToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            throw new CustomLogicException(ExceptionCode.REQUIRED_LOGIN);
+        }
+        for (Cookie cookie : cookies) {
+            if ("refreshToken".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        throw new CustomLogicException(ExceptionCode.REQUIRED_LOGIN);
     }
 
     // ( FORM, OAuth2.0 공용 ), 로그인시  refreshToken 생성.

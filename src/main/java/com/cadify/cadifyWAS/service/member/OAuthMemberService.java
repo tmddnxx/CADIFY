@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -66,9 +67,21 @@ public class OAuthMemberService {
         return memberInfo;
     }
 
+    // 최초 로그인 시 role 문자열 검증 후 MemberRole 변환
+    private MemberRole parseRole(String roleStr) {
+        if ("USER".equals(roleStr)) {
+            return MemberRole.USER;
+        } else if ("COMPANY".equals(roleStr)) {
+            return MemberRole.COMPANY;
+        } else {
+            throw new CustomLogicException(ExceptionCode.INVALID_ROLE);
+        }
+    }
+
     // 최초 로그인 시 role 선택 후 기본 사용자 정보 리턴
     @Transactional
-    public AuthDTO.AssignRoleResult assignMemberRole(MemberRole role) {
+    public AuthDTO.AssignRoleResult assignMemberRole(MemberDTO.AssignRoleRequest request) {
+        MemberRole role = parseRole(request.getRole());
         // 최초 로그인 (회원가입) 이후의 초기 역할 선택에 해당하는지 검증.
         MemberRole currentRole = jwtUtil.getAuthPrincipalObject().getRole();
         if (!currentRole.equals(MemberRole.VISITOR)) {
@@ -83,7 +96,7 @@ public class OAuthMemberService {
         oAuthMemberRepository.save(member);
 
 
-        log.info("After Assign Role : " + member.getRole());
+        log.info("After Assign Role : {}", member.getRole());
 
         // role 변경에 따른 새로운 토큰 전달
         String newAccessToken = jwtProvider.generateAccessToken(member.getMemberKey(), LoginType.OAUTH2, member.getRole());

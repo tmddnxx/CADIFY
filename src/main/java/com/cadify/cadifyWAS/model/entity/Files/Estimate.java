@@ -2,8 +2,19 @@ package com.cadify.cadifyWAS.model.entity.Files;
 
 import com.cadify.cadifyWAS.model.dto.files.EstimateDTO;
 import com.cadify.cadifyWAS.util.base.BaseTimeEntity;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,6 +35,9 @@ public class Estimate extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // 견적 pk
+
+    @Version
+    private Long version;
 
     @Column(nullable = false, unique = true)
     private String estKey; // 견적 퍼블릭 키 (UUID)
